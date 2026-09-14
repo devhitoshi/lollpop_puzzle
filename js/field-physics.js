@@ -1,4 +1,4 @@
-// ?feel=physics — round candies in a box, piling up and rolling like the real thing.
+// The board — round candies in a box, piling up and rolling like the real thing.
 // Verlet integration with a fixed step: velocity is implied by (position − previous position),
 // collisions just push positions apart. Piles stay calm, and the result is identical at 30 or 120 fps.
 // No DOM access, so tests run it in Node.
@@ -7,7 +7,7 @@ import {
   newId, makeSquash, hitSquash, findChain, pickNearest, recolorUntilMove,
 } from './field-common.js';
 
-// layout: optional array of { x, y, color } for fixed boards (tutorial, tests).
+// layout: optional array of { x, y, color, special? } for fixed boards (tutorial, tests).
 export function createPhysicsField({ config, rng, colorCount = 5, layout = null, count = config.physics.count }) {
   const c = config.physics;
   const W = c.width;
@@ -17,7 +17,7 @@ export function createPhysicsField({ config, rng, colorCount = 5, layout = null,
   let accumulator = 0;
   let restTime = 0;
 
-  function spawn(x, y, color) {
+  function spawn(x, y, color, special = null) {
     const r = c.radius * (1 + (rng() * 2 - 1) * c.radiusJitter);
     const p = {
       id: newId(),
@@ -31,12 +31,17 @@ export function createPhysicsField({ config, rng, colorCount = 5, layout = null,
       squash: makeSquash(c.squashSpring),
       alive: true,
     };
+    if (special) {
+      p.special = special;
+      p.color = null;
+      p.r = c.radius;
+    }
     pieces.push(p);
     return p;
   }
 
   if (layout) {
-    for (const { x, y, color } of layout) spawn(x, y, color);
+    for (const { x, y, color, special } of layout) spawn(x, y, color, special);
   } else {
     // Loose rows starting above the box: they rain in and settle into a pile.
     const perRow = Math.floor(W);
@@ -142,7 +147,6 @@ export function createPhysicsField({ config, rng, colorCount = 5, layout = null,
   }
 
   const field = {
-    kind: 'physics',
     width: W,
     height: H,
     pieces,
@@ -150,7 +154,7 @@ export function createPhysicsField({ config, rng, colorCount = 5, layout = null,
     pick: (x, y, radius) => pickNearest(pieces, x, y, radius),
     isAdjacent,
 
-    remove(ids, { blast = 0 } = {}) {
+    remove(ids, { blast = 0, special = null } = {}) {
       const doomed = new Set(pieces.filter((p) => ids.includes(p.id)));
       if (blast > 0) {
         for (const p of [...doomed]) {
@@ -167,13 +171,37 @@ export function createPhysicsField({ config, rng, colorCount = 5, layout = null,
       // Refill from above the box, staggered so new candies don't spawn inside each other.
       const top = Math.min(0, ...pieces.map((p) => p.y - p.r));
       let i = 0;
+      let star = special;
       for (const gone of doomed) {
+        if (star) {
+          // The star takes the spot of the last traced candy, so it appears where the finger lifted
+          spawn(Math.min(W - 0.5, Math.max(0.5, star.x)), star.y, null, 'star');
+          star = null;
+          continue;
+        }
         const x = Math.min(W - 0.5, Math.max(0.5, gone.x + (rng() - 0.5) * 1.2));
         spawn(x, top - 0.6 - i * c.spawnGap, Math.floor(rng() * colorCount));
         i++;
       }
       restTime = 0;
       return [...doomed];
+    },
+
+    // Effects: give candies near (x, y) an outward velocity (units / s), fading with distance, plus an upward hop.
+    // Verlet keeps velocity as (position − previous position), so a kick only moves the previous position.
+    kick(x, y, { radius = 2, strength = 3, up = 0 } = {}) {
+      for (const p of pieces) {
+        const dx = p.x - x;
+        const dy = p.y - y;
+        const d = Math.hypot(dx, dy);
+        if (d > radius) continue;
+        const f = strength * (1 - d / radius);
+        const nx = d > 1e-6 ? dx / d : 0;
+        const ny = d > 1e-6 ? dy / d : -1;
+        p.px -= nx * f * h;
+        p.py -= (ny * f - up) * h;
+      }
+      restTime = 0;
     },
 
     // depth = distance from the floor. The stuck check in game.js guarantees a move once things land.

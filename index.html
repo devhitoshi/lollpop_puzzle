@@ -1,40 +1,47 @@
 <!doctype html>
-<html lang="ja">
+<html lang="ja" data-theme="stylish">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>!!!!!!! 落ちものパズル｜アイドル「ろりぽっぷ!!!!!!!」の非公式ファンゲーム</title>
-  <meta name="description" content="アイドルグループ「ろりぽっぷ!!!!!!!」のメンバーカラーのロリポップを、なぞって消す 3 分間のパズル。非公式のファン制作です。">
-  <meta name="theme-color" content="#1a1113">
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/game.css">
-  <link rel="stylesheet" href="css/ui.css">
+  <meta name="description" content="アイドルグループ「ろりぽっぷ!!!!!!!」のメンバーカラーのロリポップを、なぞって消す 1 分間のパズル（エンドレスもあり）。非公式のファン制作です。">
+  <meta name="theme-color" content="#fff3f8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap">
+  <!-- data-theme above is the default; js/theme.js switches it. Each theme only styles inside [data-theme="<name>"]. -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/themes/stylish.css">
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
+  <!-- Markup carries what every theme needs (Japanese and English labels, per-letter "!"); themes hide what they don't use. -->
   <div class="app" id="app" data-screen="title">
     <header class="hud" data-part="H">
       <div class="hud-cell" data-part="H1">
-        <span class="hud-label">のこり</span>
-        <span class="hud-value" id="time">3:00</span>
+        <span class="hud-label"><span class="ja">のこり</span><span class="en"><span class="for-timed">TIME</span><span class="for-endless">LIFE</span></span></span>
+        <span class="hud-value" id="time">1:00</span>
       </div>
       <div class="hud-bangs" id="bangs" data-part="H3" aria-label="! ゲージ">
         <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <span class="spurt-tag" data-part="H4" aria-hidden="true">LAST SPURT</span>
       </div>
       <div class="hud-cell hud-cell-end" data-part="H2">
-        <span class="hud-label">スコア</span>
+        <span class="hud-label"><span class="ja">スコア</span><span class="en">SCORE</span></span>
         <span class="hud-value" id="score">0</span>
       </div>
     </header>
 
     <div class="stage">
       <canvas id="board" aria-label="パズルの盤面" data-part="B1"></canvas>
+      <div class="board-frame" id="board-frame" aria-hidden="true"><span class="board-tag">LOLLPOP PUZZLE</span></div>
       <div class="combo" id="combo" data-part="C" aria-live="polite"><b id="combo-n">0</b><span>COMBO</span></div>
       <div class="fever" id="fever" data-part="F">!!!!!!! FEVER</div>
+      <div class="fever banner" id="banner" data-part="F3" aria-live="polite"></div>
       <div class="fever-timer" id="fever-timer" data-part="F2" aria-hidden="true">
         <span class="fever-timer-label">FEVER</span>
         <span class="fever-timer-bar"><i id="fever-bar"></i></span>
-        <span class="fever-timer-sec">あと <b id="fever-sec">8</b></span>
+        <span class="fever-timer-sec"><span class="ja">あと <b id="fever-sec">8</b></span><b class="en" id="fever-sec-fine">08.0</b></span>
       </div>
       <div class="toast" id="toast" role="status" data-part="B3"></div>
       <div class="start-hint" id="start-hint" data-part="B2">なぞってスタート</div>
@@ -42,8 +49,9 @@
 
     <div class="actions">
       <button class="rescue" id="rescue" data-part="Q1" aria-label="下を爆発させて混ぜ直す">
-        <span class="rescue-label">ボム</span>
-        <span class="rescue-sub">下をふっとばして まぜる</span>
+        <span class="rescue-en en">BOMB</span>
+        <span class="rescue-label">ぽっぷボム</span>
+        <span class="rescue-sub ja">下をふっとばして まぜる</span>
         <span class="rescue-pips" id="rescue-pips"><i></i><i></i><i></i></span>
       </button>
     </div>
@@ -51,40 +59,78 @@
     <footer class="credit" data-part="B4">非公式のファン制作（AIぽっぱー）</footer>
 
     <section class="screen screen-title" id="screen-title" data-part="T">
-      <div class="band band-white">
-        <p class="eyebrow" data-part="T1">🍭 ろりぽっぷ!!!!!!! 非公式ファンゲーム</p>
-        <h1 class="title-logo" data-part="T2"><span class="title-bang">!!!!!!!</span>落ちものパズル</h1>
-        <p class="lead" data-part="T5">同じ色のロリポップを 3 つ以上なぞって消そう。<br>3 分間でどこまでいける？</p>
+      <div class="screen-deco" aria-hidden="true">
+        <span class="deco-word">LOLLPOP</span>
+        <i class="deco star" style="--x:3%;--y:1%;--s:18px;--r:10deg;--c:var(--deco-2)"></i>
+        <i class="deco bang" style="--x:52%;--y:0.5%;--s:26px;--r:12deg;--c:var(--deco-1)"></i>
+        <i class="deco heart" style="--x:1.5%;--y:94%;--s:18px;--r:-14deg;--c:var(--deco-3)"></i>
+        <i class="deco star" style="--x:92%;--y:95%;--s:16px;--r:-10deg;--c:var(--deco-4)"></i>
       </div>
-      <div class="band band-dark title-actions">
-        <div class="skin-switch" id="skin-switch" role="radiogroup" aria-label="駒の見た目" data-part="T8"></div>
-        <button class="btn btn-primary" id="btn-play" data-part="T3">あそぶ</button>
-        <button class="btn btn-ghost" id="btn-howto" data-part="T4" disabled>遊び方</button>
+      <div class="title-head">
+        <span class="deco-stripes" aria-hidden="true"></span>
+        <p class="eyebrow" data-part="T1"><span class="ja">🍭 </span>ろりぽっぷ!!!!!!! 非公式ファンゲーム</p>
+        <h1 class="title-logo" data-part="T2">
+          <small class="en">FALLING CANDY PUZZLE</small>
+          <span class="title-bang" aria-label="!!!!!!!"><i>!</i><i>!</i><i>!</i><i>!</i><i>!</i><i>!</i><i>!</i></span>
+          <span class="title-name">落ちものパズル</span>
+        </h1>
+        <p class="lead" data-part="T5">同じ色のロリポップを 3 つ以上なぞって消そう。<br>1 分間でどこまでいける？</p>
+      </div>
+      <div class="title-window" aria-hidden="true"></div>
+      <div class="title-actions">
+        <div class="switches">
+          <div class="switch-group" data-part="T10"><span class="switch-caption" id="vibe-caption">振動</span><div class="switch" id="vibe-switch" role="radiogroup" aria-labelledby="vibe-caption"></div></div>
+          <div class="switch-group" data-part="T8"><span class="switch-caption" id="skin-caption">駒</span><div class="switch" id="skin-switch" role="radiogroup" aria-labelledby="skin-caption"></div></div>
+          <div class="switch-group" data-part="T9"><span class="switch-caption" id="theme-caption">画面</span><div class="switch" id="theme-switch" role="radiogroup" aria-labelledby="theme-caption"></div></div>
+        </div>
+        <button class="btn btn-primary" id="btn-play" data-part="T3"><small class="en">START · 1 MINUTE</small>あそぶ</button>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="btn-endless" data-part="T11"><small class="en">ENDLESS</small>エンドレス</button>
+          <button class="btn btn-ghost" id="btn-howto" data-part="T4" disabled><small class="en">HOW TO</small>遊び方</button>
+        </div>
         <p class="note" data-part="T6">非公式のファン制作（AIぽっぱー）です。<br>ろりぽっぷ!!!!!!! の運営・GMOペパボとは関係ありません。</p>
         <p class="note" id="skin-credit" data-part="T7" hidden></p>
       </div>
     </section>
 
     <section class="screen screen-result" id="screen-result" data-part="R" aria-labelledby="result-heading">
-      <div class="band band-white">
-        <p class="eyebrow" id="result-heading">RESULT</p>
+      <div class="screen-deco" aria-hidden="true">
+        <span class="deco-stripes"></span>
+        <i class="deco star" style="--x:76%;--y:5%;--s:24px;--r:12deg;--c:var(--deco-2)"></i>
+        <i class="deco heart" style="--x:88%;--y:10%;--s:18px;--r:-10deg;--c:var(--deco-1)"></i>
+        <i class="deco heart" style="--x:5%;--y:93%;--s:16px;--r:8deg;--c:var(--deco-3)"></i>
+      </div>
+      <div class="result-body">
+        <div class="result-head">
+          <p class="eyebrow" id="result-heading">RESULT</p>
+          <span class="result-tag en">!!!!!!! 落ちものパズル</span>
+        </div>
         <div class="festival" data-part="R1">
-          <span class="festival-label">ポップなお祭り度</span>
-          <span class="festival-value"><b id="r-percent">0</b>%</span>
-          <span class="festival-tier" id="r-tier"></span>
+          <span class="festival-rank en" id="r-rank">C</span>
+          <div class="festival-main">
+            <small class="en">POP FESTIVAL</small>
+            <span class="festival-label">ポップなお祭り度</span>
+            <span class="festival-value"><b id="r-percent">0</b>%</span>
+            <span class="festival-tier" id="r-tier"></span>
+          </div>
         </div>
         <dl class="stats" data-part="R2">
-          <div><dt>スコア</dt><dd id="r-score">0</dd></div>
-          <div><dt>最大コンボ</dt><dd id="r-combo">0</dd></div>
-          <div><dt>フィーバー</dt><dd id="r-fever">0 回</dd></div>
-          <div><dt>今日の推し色</dt><dd id="r-favorite">—</dd></div>
+          <div><dt><span class="ja">スコア</span><span class="en">SCORE</span></dt><dd id="r-score">0</dd><i class="stat-bar" id="r-score-bar"></i></div>
+          <div><dt><span class="ja">最大コンボ</span><span class="en">MAX COMBO</span></dt><dd id="r-combo">0</dd><i class="stat-bar" id="r-combo-bar"></i></div>
+          <div><dt><span class="ja">フィーバー</span><span class="en">FEVER</span></dt><dd id="r-fever">0 回</dd><i class="stat-bar" id="r-fever-bar"></i></div>
+          <div class="for-endless"><dt><span class="ja">続いた時間</span><span class="en">SURVIVED</span></dt><dd id="r-elapsed">0 秒</dd><i class="stat-bar" id="r-elapsed-bar"></i></div>
+          <div><dt>今日の推し色</dt><dd id="r-favorite">—</dd><i class="stat-bar" id="r-favorite-bar"></i></div>
         </dl>
+        <p class="best" id="r-best" data-part="R10"></p>
       </div>
-      <div class="band band-dark result-actions">
-        <button class="btn btn-primary" id="btn-again" data-part="R3">もう一回</button>
-        <button class="btn btn-ghost" id="btn-title" data-part="R4">タイトルへ</button>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="btn-again" data-part="R3"><small class="en">RETRY</small>もう一回</button>
+        <button class="btn btn-ghost" id="btn-title" data-part="R4"><small class="en">BACK</small>タイトルへ</button>
+        <p class="note">非公式のファン制作（AIぽっぱー）です。<br>ろりぽっぷ!!!!!!! の運営・GMOペパボとは関係ありません。</p>
       </div>
     </section>
+
+    <canvas class="fx-overlay" id="fx-overlay" aria-hidden="true"></canvas>
   </div>
 </body>
 </html>

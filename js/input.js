@@ -20,6 +20,8 @@ export function createTraceInput(canvas, { config, renderer, getField, onChange,
       return true;
     }
     if (path.includes(hit)) return false;
+    // A star candy is tapped, never traced: nothing links to it and it links to nothing
+    if (hit.special || path[0].special) return false;
     if (hit.color !== path[0].color) return false;
     if (!field.isAdjacent(tail, hit)) return false;
     path.push(hit);

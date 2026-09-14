@@ -36,7 +36,7 @@ export class Spring {
 }
 
 // Samples a unit spring into a CSS `linear()` easing so CSS / Web Animations
-// share the exact feel of the physics. Falls back to a close cubic-bezier.
+// share the exact motion of the simulation. Falls back to a close cubic-bezier.
 const supportsLinear =
   typeof CSS !== 'undefined' && CSS.supports('transition-timing-function', 'linear(0, 1)');
 

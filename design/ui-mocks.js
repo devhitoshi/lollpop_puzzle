@@ -21,12 +21,23 @@ const bangs = (cls = '') => `<span class="bangs ${cls}">${[0, 1, 2, 3, 4, 5, 6].
 const NOTE = '非公式のファン制作（AIぽっぱー）。ろりぽっぷ!!!!!!! の運営・GMOペパボとは関係ありません。';
 const board = (cls) => `<div class="${cls}" data-part="U6"><img src="design/board.png" alt=""></div>`;
 
+const DECO_SHAPES = {
+  heart: '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>',
+  star: '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.6 7.3L12 17.8l-6.2 3.7 1.6-7.3L2 9.5l7.1-.6z"/></svg>',
+  bang: '!',
+};
+// [shape, left, top, size, rotate(deg), color]
+const deco = (items) => items.map(([k, x, y, s, r, c]) =>
+  `<i class="e-deco ${k}" style="left:${x}px;top:${y}px;--s:${s}px;--r:${r}deg;--c:${c}">${DECO_SHAPES[k]}</i>`).join('');
+const P = { pink: '#ff4f9a', soft: '#ff9ec8', yellow: '#ffd44d', blue: '#9fe0ef', green: '#6cc28e' };
+
 export const UI_VARIANTS = [
   {
     id: 'candy',
     name: 'A キャンディポップ',
+    status: '採用・未実装',
     concept: '飴の世界。パステルのストライプ、飴の包み紙のパネル、押すとぷにっと沈むボタン、丸ゴシックの極太。明るく、SNS で目を引く。',
-    rescueName: 'ポップボム',
+    rescueName: 'ぽっぷボム',
     screens: {
       title: `
         <div class="bg" data-part="U1"></div>
@@ -47,7 +58,7 @@ export const UI_VARIANTS = [
         </div>
         <div class="c-fever" data-part="U8"><span>FEVER</span><i><em></em></i><b>あと 6</b></div>
         ${board('c-board')}
-        <div class="c-rescue" data-part="U7"><span class="c-bomb"></span><b>ポップボム</b><span class="pips"><i></i><i></i><i class="used"></i></span></div>
+        <div class="c-rescue" data-part="U7"><span class="c-bomb"></span><b>ぽっぷボム</b><span class="pips"><i></i><i></i><i class="used"></i></span></div>
         <p class="c-note small" data-part="U11">非公式のファン制作（AIぽっぱー）</p>`,
       result: `
         <div class="bg" data-part="U1"></div>
@@ -64,8 +75,25 @@ export const UI_VARIANTS = [
     },
   },
   {
+    id: 'stylish-plus',
+    cls: 'ui-stylish ui-stylish-plus',
+    name: 'E+ かわいいスタイリッシュ',
+    status: '採用・実装済み',
+    concept: '実装済み（下の「画面（実装済み）」が実物）。E の形（斜めのパネルとボタン、英字の小見出し、傾けた太い数字、四隅の括弧、ランク文字）はそのまま、色をろりぽっぷらしいかわいい色に変えた案。淡いピンクの地にピンク寄りの格子線、文字とパネルは濃いプラム、押せるものはろりぽっぷピンクでピンクの影、ストライプはメンバーカラーを淡くしたもの。小さなハート・星・「!」をちりばめる。',
+    rescueName: 'ぽっぷボム',
+    screens: stylishScreens({
+      title: [['star', 34, 24, 22, 10, P.yellow], ['bang', 150, 20, 28, 12, P.pink], ['heart', 20, 282, 24, -14, P.pink], ['star', 128, 300, 16, 0, P.blue],
+        ['bang', 36, 522, 30, -8, P.soft], ['star', 176, 560, 18, 20, P.yellow], ['heart', 322, 530, 28, 14, P.soft], ['heart', 56, 760, 16, 8, P.soft], ['star', 318, 762, 20, -10, P.green]],
+      play: [['heart', 36, 556, 26, -12, P.pink], ['bang', 112, 600, 22, -10, P.yellow], ['bang', 182, 640, 34, 10, P.soft], ['star', 296, 572, 22, 12, P.yellow],
+        ['star', 64, 686, 16, 0, P.blue], ['heart', 318, 684, 18, 16, P.soft], ['star', 236, 712, 14, -8, P.green]],
+      result: [['star', 296, 44, 26, 12, P.yellow], ['bang', 264, 76, 28, 12, P.soft], ['heart', 342, 90, 18, -10, P.pink],
+        ['heart', 36, 556, 24, -14, P.soft], ['star', 196, 548, 18, 0, P.blue], ['bang', 326, 540, 30, 10, P.pink], ['heart', 56, 760, 16, 8, P.soft], ['star', 318, 762, 20, -10, P.green]],
+    }, 'ぽっぷボム'),
+  },
+  {
     id: 'matsuri',
     name: 'B 夜のポップなお祭り',
+    status: '不採用（参考）',
     concept: 'コンセプト「ポップなお祭り」に寄せた夜の縁日。5 色の提灯と花火、のれんのロゴ、木札のボタン、屋台の枠。救済は「花火」、結果は「お祭りみくじ」。',
     rescueName: '花火',
     screens: {
@@ -111,6 +139,7 @@ export const UI_VARIANTS = [
   {
     id: 'live',
     name: 'C ライブ会場',
+    status: '不採用（参考）',
     concept: '現場の空気。暗いステージにスポットライト、ペンライト色のネオン、LED の得点板。救済は「銀テ発射」、結果はチケット。',
     rescueName: '銀テ発射',
     screens: {
@@ -155,6 +184,7 @@ export const UI_VARIANTS = [
   {
     id: 'pop3d',
     name: 'D ポップ 3D カジュアル',
+    status: '不採用（参考）',
     concept: '今のパズルゲームの主流の見た目。光の筋が回る青空の背景、厚みと光沢のあるボタン、金の縁取りの盤面、リボンの見出し。結果は星 3 つとランクのバッジ。数字は太い斜体に縁取り。',
     rescueName: 'ボム',
     screens: {
@@ -196,11 +226,19 @@ export const UI_VARIANTS = [
   {
     id: 'stylish',
     name: 'E スタイリッシュ・アニメ系',
+    status: '不採用（E+ の元）',
     concept: '最近の音楽ゲーム・アニメ系ゲームの UI。白地にメンバーカラーの差し色、斜めに切ったパネルとボタン、細い線と四隅の括弧、英字の小見出し、傾けた太い数字。結果はランク文字とバーのグラフ。',
     rescueName: 'BOMB',
-    screens: {
+    screens: stylishScreens(),
+  },
+];
+
+// E and E+ share the markup; E+ only swaps the color variables (.ui-stylish-plus) and scatters decorations.
+function stylishScreens(decos, rescue = 'ボム') {
+  const d = (key) => (decos ? deco(decos[key]) : '');
+  return {
       title: `
-        <div class="bg" data-part="U1"><span class="e-stripes"></span><span class="e-big">LOLLPOP</span></div>
+        <div class="bg" data-part="U1"><span class="e-stripes"></span><span class="e-big">LOLLPOP</span>${d('title')}</div>
         <div class="e-logo" data-part="U2"><small>FALLING CANDY PUZZLE</small><span class="e-bangs">!!!!!!!</span><span class="e-name">落ちものパズル</span></div>
         <div class="e-peek" data-corner><img src="design/board.png" alt=""></div>
         <div class="e-actions">
@@ -209,7 +247,7 @@ export const UI_VARIANTS = [
         </div>
         <p class="e-note" data-part="U11">${NOTE}</p>`,
       play: `
-        <div class="bg" data-part="U1"><span class="e-stripes small"></span></div>
+        <div class="bg" data-part="U1"><span class="e-stripes small"></span>${d('play')}</div>
         <div class="e-hud" data-part="U5">
           <span class="e-tab"><small>TIME</small><b>1:36</b></span>
           <span class="e-gauge">${[0, 1, 2, 3, 4, 5, 6].map((i) => `<i class="${i < 5 ? 'on' : ''}" style="--c:${MEMBER[i % 5]}"></i>`).join('')}</span>
@@ -217,13 +255,13 @@ export const UI_VARIANTS = [
         </div>
         <div class="e-fever" data-part="U8"><span>FEVER</span><i><em></em></i><b>05.4</b></div>
         <div class="e-frame">${board('e-board')}<span class="e-stage">STAGE 01</span></div>
-        <div class="e-rescue" data-part="U7"><small>BOMB</small><b>ボム</b><span class="segs"><i></i><i></i><i class="used"></i></span></div>
+        <div class="e-rescue" data-part="U7"><small>BOMB</small><b>${rescue}</b><span class="segs"><i></i><i></i><i class="used"></i></span></div>
         <p class="e-note small" data-part="U11">非公式のファン制作（AIぽっぱー）</p>`,
       result: `
-        <div class="bg" data-part="U1"><span class="e-stripes"></span></div>
+        <div class="bg" data-part="U1"><span class="e-stripes"></span>${d('result')}</div>
         <div class="e-result">
           <div class="e-rhead" data-part="U2"><span>RESULT</span><small>!!!!!!! 落ちものパズル</small></div>
-          <div data-part="U9" class="e-main"><span class="rank">A</span><div><small>POP FESTIVAL</small><b class="pct">71<span>%</span></b><em>ポップなお祭り度／お祭りの真ん中</em></div></div>
+          <div data-part="U9" class="e-main"><span class="rank">A</span><div><small>POP FESTIVAL</small><b class="pct">71<span>%</span></b><em>ポップなお祭り度<br>お祭りの真ん中</em></div></div>
           <dl data-part="U10">
             <div><dt>SCORE</dt><dd>213,400</dd><i style="--w:71%"></i></div>
             <div><dt>MAX COMBO</dt><dd>23</dd><i style="--w:46%"></i></div>
@@ -236,9 +274,8 @@ export const UI_VARIANTS = [
           <div class="e-row"><span class="e-btn" data-part="U4"><small>SHARE</small>画像でシェア</span><span class="e-btn"><small>POST</small>X で投稿</span></div>
         </div>
         <p class="e-note" data-part="U11">${NOTE}</p>`,
-    },
-  },
-];
+  };
+}
 
 export const UI_CSS = `
 .ui { position: relative; width: 390px; height: 844px; overflow: hidden; font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif; }
@@ -446,66 +483,85 @@ export const UI_CSS = `
 .ui-pop3d .d-main .rank { position: absolute; right: -4px; top: 14px; display: grid; place-items: center; width: 64px; height: 70px; background: linear-gradient(#ffe14a, #ff9d00); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); font-family: "Dela Gothic One", sans-serif; font-size: 34px; color: #fff; -webkit-text-stroke: 4px #b36b00; paint-order: stroke fill; }
 .ui-pop3d .d-result dl { margin-top: 12px; padding: 12px; border-radius: 14px; background: rgba(16, 50, 122, 0.08); text-align: left; }
 
-/* ---------- E stylish ---------- */
-.ui-stylish { color: #14161f; font-family: "M PLUS Rounded 1c", sans-serif; }
-.ui-stylish .bg { overflow: hidden; background: linear-gradient(rgba(20, 22, 31, 0.05) 1px, transparent 1px) 0 0 / 100% 24px, linear-gradient(90deg, rgba(20, 22, 31, 0.05) 1px, transparent 1px) 0 0 / 24px 100%, #f7f8fc; }
-.ui-stylish .e-stripes { position: absolute; right: -80px; top: -40px; width: 300px; height: 520px; background: linear-gradient(90deg, #cc0000 0 16%, transparent 16% 20%, #f5c400 20% 36%, transparent 36% 40%, #7fd4e8 40% 56%, transparent 56% 60%, #2e9e5b 60% 76%, transparent 76% 80%, #ff2e88 80%); transform: skewX(-24deg); opacity: 0.9; }
+/* ---------- E stylish (colors are variables so E+ can swap them) ---------- */
+.ui-stylish {
+  --ink: #14161f; --paper: #f7f8fc; --card: #fff; --paper-lines: rgba(20, 22, 31, 0.05); --outline: rgba(20, 22, 31, 0.12);
+  --accent: #ff2e88; --accent-soft: #ffd1e6; --accent-on-ink: #ff7cb8; --muted: #8a8fa3; --muted-2: #6b7086;
+  --track: #dfe2ec; --seg: #f5c400; --seg-used: #3a3d4d; --fever-bar: linear-gradient(90deg, #ff2e88, #f5c400);
+  --stripe-1: #cc0000; --stripe-2: #f5c400; --stripe-3: #7fd4e8; --stripe-4: #2e9e5b; --stripe-5: #ff2e88; --stripe-opacity: 0.9;
+  --drop: transparent;
+  color: var(--ink); font-family: "M PLUS Rounded 1c", sans-serif;
+}
+.ui-stylish .bg { overflow: hidden; background: linear-gradient(var(--paper-lines) 1px, transparent 1px) 0 0 / 100% 24px, linear-gradient(90deg, var(--paper-lines) 1px, transparent 1px) 0 0 / 24px 100%, var(--paper); }
+.ui-stylish .e-stripes { position: absolute; right: -80px; top: -40px; width: 300px; height: 520px; background: linear-gradient(90deg, var(--stripe-1) 0 16%, transparent 16% 20%, var(--stripe-2) 20% 36%, transparent 36% 40%, var(--stripe-3) 40% 56%, transparent 56% 60%, var(--stripe-4) 60% 76%, transparent 76% 80%, var(--stripe-5) 80%); transform: skewX(-24deg); opacity: var(--stripe-opacity); }
 .ui-stylish .e-stripes.small { width: 160px; height: 110px; opacity: 0.6; }
-.ui-stylish .e-big { position: absolute; left: -20px; bottom: 150px; font-family: "Dela Gothic One", sans-serif; font-size: 110px; color: transparent; -webkit-text-stroke: 1.5px rgba(20, 22, 31, 0.12); transform: rotate(-90deg) translateX(-100%); transform-origin: 0 0; white-space: nowrap; }
+.ui-stylish .e-big { position: absolute; left: -20px; bottom: 150px; font-family: "Dela Gothic One", sans-serif; font-size: 110px; color: transparent; -webkit-text-stroke: 1.5px var(--outline); transform: rotate(-90deg) translateX(-100%); transform-origin: 0 0; white-space: nowrap; }
 .ui-stylish .e-logo { position: absolute; top: 64px; left: 30px; right: 30px; }
-.ui-stylish .e-logo small { display: block; font-size: 12px; font-weight: 900; letter-spacing: 0.3em; color: #ff2e88; }
-.ui-stylish .e-bangs { display: block; margin-top: 4px; font-family: "Dela Gothic One", sans-serif; font-size: 88px; line-height: 1; color: #14161f; transform: skewX(-12deg); text-shadow: 6px 6px 0 #ff2e88; }
-.ui-stylish .e-name { display: inline-block; margin-top: 12px; padding: 6px 22px; background: #14161f; color: #fff; font-family: "Dela Gothic One", sans-serif; font-size: 30px; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); }
+.ui-stylish .e-logo small { display: block; font-size: 12px; font-weight: 900; letter-spacing: 0.3em; color: var(--accent); }
+.ui-stylish .e-bangs { display: block; margin-top: 4px; font-family: "Dela Gothic One", sans-serif; font-size: 88px; line-height: 1; color: var(--ink); transform: skewX(-12deg); text-shadow: 6px 6px 0 var(--accent); }
+.ui-stylish .e-name { display: inline-block; margin-top: 12px; padding: 6px 22px; background: var(--ink); color: #fff; font-family: "Dela Gothic One", sans-serif; font-size: 30px; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); }
 .ui-stylish .e-peek { position: absolute; top: 330px; left: 30px; right: 30px; height: 180px; overflow: hidden; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
-.ui-stylish .e-actions { position: absolute; left: 30px; right: 30px; bottom: 96px; display: grid; gap: 12px; }
+.ui-stylish .e-actions { position: absolute; left: 30px; right: 30px; bottom: 96px; display: grid; gap: 12px; filter: drop-shadow(4px 5px 0 var(--drop)); }
 .ui-stylish .e-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ui-stylish .e-btn { position: relative; display: grid; padding: 10px 18px; background: #fff; color: #14161f; font-size: 17px; font-weight: 900; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); box-shadow: inset 0 0 0 2px #14161f; text-align: center; }
-.ui-stylish .e-btn small { font-size: 10px; letter-spacing: 0.25em; color: #8a8fa3; }
-.ui-stylish .e-btn.pink { padding: 14px 18px; background: #ff2e88; color: #fff; font-family: "Dela Gothic One", sans-serif; font-size: 30px; font-weight: 400; box-shadow: none; clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%); }
-.ui-stylish .e-btn.pink small { color: #ffd1e6; font-family: "M PLUS Rounded 1c", sans-serif; font-weight: 900; }
+.ui-stylish .e-btn { position: relative; display: grid; padding: 10px 18px; background: var(--card); color: var(--ink); font-size: 17px; font-weight: 900; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); box-shadow: inset 0 0 0 2px var(--ink); text-align: center; }
+.ui-stylish .e-btn small { font-size: 10px; letter-spacing: 0.25em; color: var(--muted); }
+.ui-stylish .e-btn.pink { padding: 14px 18px; background: var(--accent); color: #fff; font-family: "Dela Gothic One", sans-serif; font-size: 30px; font-weight: 400; box-shadow: none; clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%); }
+.ui-stylish .e-btn.pink small { color: var(--accent-soft); font-family: "M PLUS Rounded 1c", sans-serif; font-weight: 900; }
 .ui-stylish .e-btn.pink::after { content: ""; position: absolute; right: 30px; top: 50%; width: 14px; height: 18px; background: #fff; clip-path: polygon(0 0, 100% 50%, 0 100%); transform: translateY(-50%); }
-.ui-stylish .e-note { position: absolute; left: 24px; right: 24px; bottom: 20px; margin: 0; font-size: 11px; line-height: 1.6; text-align: center; color: #6b7086; }
+.ui-stylish .e-note { position: absolute; left: 24px; right: 24px; bottom: 20px; margin: 0; font-size: 11px; line-height: 1.6; text-align: center; color: var(--muted-2); }
 .ui-stylish .e-note.small { bottom: 12px; }
 .ui-stylish .e-hud { position: absolute; top: 14px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; }
-.ui-stylish .e-tab { display: grid; min-width: 118px; padding: 4px 20px 4px 14px; background: #14161f; color: #fff; clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%); line-height: 1.1; }
+.ui-stylish .e-tab { display: grid; min-width: 118px; padding: 4px 20px 4px 14px; background: var(--ink); color: #fff; clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%); line-height: 1.1; }
 .ui-stylish .e-tab.right { padding: 4px 14px 4px 22px; text-align: right; clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%); }
-.ui-stylish .e-tab small { font-size: 9px; font-weight: 900; letter-spacing: 0.25em; color: #ff7cb8; }
+.ui-stylish .e-tab small { font-size: 9px; font-weight: 900; letter-spacing: 0.25em; color: var(--accent-on-ink); }
 .ui-stylish .e-tab b { font-family: "Dela Gothic One", sans-serif; font-size: 24px; font-weight: 400; transform: skewX(-10deg); }
 .ui-stylish .e-gauge { display: flex; gap: 3px; }
-.ui-stylish .e-gauge i { width: 12px; height: 26px; background: #dfe2ec; transform: skewX(-18deg); }
-.ui-stylish .e-gauge i.on { background: var(--c); box-shadow: inset 0 0 0 1px rgba(20, 22, 31, 0.25); }
+.ui-stylish .e-gauge i { width: 12px; height: 26px; background: var(--track); transform: skewX(-18deg); }
+.ui-stylish .e-gauge i.on { background: var(--c); box-shadow: inset 0 0 0 1px var(--outline); }
 .ui-stylish .e-fever { position: absolute; top: 70px; left: 12px; right: 12px; display: flex; align-items: center; gap: 8px; }
-.ui-stylish .e-fever span { padding: 2px 14px; background: #ff2e88; color: #fff; font-family: "Dela Gothic One", sans-serif; font-size: 15px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); }
-.ui-stylish .e-fever i { flex: 1; height: 10px; background: #dfe2ec; transform: skewX(-24deg); }
-.ui-stylish .e-fever em { display: block; width: 68%; height: 100%; background: linear-gradient(90deg, #ff2e88, #f5c400); }
+.ui-stylish .e-fever span { padding: 2px 14px; background: var(--accent); color: #fff; font-family: "Dela Gothic One", sans-serif; font-size: 15px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); }
+.ui-stylish .e-fever i { flex: 1; height: 10px; background: var(--track); transform: skewX(-24deg); }
+.ui-stylish .e-fever em { display: block; width: 68%; height: 100%; background: var(--fever-bar); }
 .ui-stylish .e-fever b { font-family: "Dela Gothic One", sans-serif; font-size: 26px; font-weight: 400; transform: skewX(-10deg); }
 .ui-stylish .e-frame { position: absolute; top: 100px; left: 12px; right: 12px; padding: 8px; }
-.ui-stylish .e-frame::before, .ui-stylish .e-frame::after { content: ""; position: absolute; width: 28px; height: 28px; border: 3px solid #14161f; }
+.ui-stylish .e-frame::before, .ui-stylish .e-frame::after { content: ""; position: absolute; width: 28px; height: 28px; border: 3px solid var(--ink); }
 .ui-stylish .e-frame::before { left: 0; top: 0; border-right: 0; border-bottom: 0; }
 .ui-stylish .e-frame::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
-.ui-stylish .e-stage { position: absolute; left: 36px; bottom: -8px; padding: 0 8px; background: #f7f8fc; font-size: 10px; font-weight: 900; letter-spacing: 0.25em; }
+.ui-stylish .e-stage { position: absolute; left: 36px; bottom: -8px; padding: 0 8px; background: var(--paper); font-size: 10px; font-weight: 900; letter-spacing: 0.25em; }
 .ui-stylish .e-board { overflow: hidden; }
-.ui-stylish .e-rescue { position: absolute; left: 50%; bottom: 36px; display: grid; grid-template-columns: auto auto; column-gap: 12px; align-items: center; padding: 6px 30px; background: #14161f; color: #fff; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); transform: translateX(-50%); }
-.ui-stylish .e-rescue small { grid-column: 1; font-size: 9px; font-weight: 900; letter-spacing: 0.25em; color: #ff7cb8; }
+.ui-stylish .e-rescue { position: absolute; left: 50%; bottom: 36px; display: grid; grid-template-columns: auto auto; column-gap: 12px; align-items: center; padding: 6px 30px; background: var(--ink); color: #fff; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%); transform: translateX(-50%); }
+.ui-stylish .e-rescue small { grid-column: 1; font-size: 9px; font-weight: 900; letter-spacing: 0.25em; color: var(--accent-on-ink); }
 .ui-stylish .e-rescue b { grid-column: 1; font-family: "Dela Gothic One", sans-serif; font-size: 22px; font-weight: 400; }
 .ui-stylish .e-rescue .segs { grid-column: 2; grid-row: 1 / 3; display: flex; gap: 4px; }
-.ui-stylish .e-rescue .segs i { width: 12px; height: 22px; background: #f5c400; transform: skewX(-18deg); }
-.ui-stylish .e-rescue .segs i.used { background: #3a3d4d; }
+.ui-stylish .e-rescue .segs i { width: 12px; height: 22px; background: var(--seg); transform: skewX(-18deg); }
+.ui-stylish .e-rescue .segs i.used { background: var(--seg-used); }
 .ui-stylish .e-result { position: absolute; top: 40px; left: 22px; right: 22px; }
-.ui-stylish .e-rhead span { display: block; font-family: "Dela Gothic One", sans-serif; font-size: 62px; line-height: 1; color: transparent; -webkit-text-stroke: 2px #14161f; transform: skewX(-10deg); }
-.ui-stylish .e-rhead small { display: inline-block; margin-top: 4px; padding: 2px 12px; background: #14161f; color: #fff; font-size: 12px; font-weight: 900; }
-.ui-stylish .e-main { display: flex; align-items: center; gap: 16px; margin-top: 16px; padding: 14px 18px; background: #fff; clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%); box-shadow: inset 0 0 0 2px #14161f; }
-.ui-stylish .e-main .rank { font-family: "Dela Gothic One", sans-serif; font-size: 110px; line-height: 1; color: #ff2e88; transform: skewX(-12deg); text-shadow: 5px 5px 0 #14161f; }
-.ui-stylish .e-main small { font-size: 11px; font-weight: 900; letter-spacing: 0.25em; color: #8a8fa3; }
+.ui-stylish .e-rhead span { display: block; font-family: "Dela Gothic One", sans-serif; font-size: 62px; line-height: 1; color: transparent; -webkit-text-stroke: 2px var(--ink); transform: skewX(-10deg); }
+.ui-stylish .e-rhead small { display: inline-block; margin-top: 4px; padding: 2px 12px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 900; }
+.ui-stylish .e-main { display: flex; align-items: center; gap: 16px; margin-top: 16px; padding: 14px 18px; background: var(--card); clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%); box-shadow: inset 0 0 0 2px var(--ink); }
+.ui-stylish .e-main .rank { font-family: "Dela Gothic One", sans-serif; font-size: 110px; line-height: 1; color: var(--accent); transform: skewX(-12deg); text-shadow: 5px 5px 0 var(--ink); }
+.ui-stylish .e-main small { font-size: 11px; font-weight: 900; letter-spacing: 0.25em; color: var(--muted); }
 .ui-stylish .e-main .pct { display: block; font-family: "Dela Gothic One", sans-serif; font-size: 58px; line-height: 1; font-weight: 400; transform: skewX(-10deg); }
 .ui-stylish .e-main .pct span { font-size: 24px; }
 .ui-stylish .e-main em { font-style: normal; font-size: 12px; font-weight: 800; }
-.ui-stylish .e-result dl { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 16px; padding: 12px 16px; background: #fff; box-shadow: inset 0 0 0 2px #14161f; }
-.ui-stylish .e-result dl div { display: grid; grid-template-columns: 110px 1fr; align-items: baseline; padding-bottom: 6px; border-bottom: 1px solid #14161f; position: relative; }
-.ui-stylish .e-result dt { font-size: 11px; letter-spacing: 0.18em; opacity: 1; color: #6b7086; }
+.ui-stylish .e-result dl { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 16px; padding: 12px 16px; background: var(--card); box-shadow: inset 0 0 0 2px var(--ink); }
+.ui-stylish .e-result dl div { display: grid; grid-template-columns: 110px 1fr; align-items: baseline; padding-bottom: 6px; border-bottom: 1px solid var(--ink); position: relative; }
+.ui-stylish .e-result dt { font-size: 11px; letter-spacing: 0.18em; opacity: 1; color: var(--muted-2); }
 .ui-stylish .e-result dd { font-family: "Dela Gothic One", sans-serif; font-size: 22px; font-weight: 400; text-align: right; }
 .ui-stylish .e-result dd em { display: inline-block; width: 14px; height: 14px; margin-right: 6px; border-radius: 50%; }
-.ui-stylish .e-result dl div i { position: absolute; left: 0; bottom: -2px; width: var(--w); height: 3px; background: var(--c, #ff2e88); }
+.ui-stylish .e-result dl div i { position: absolute; left: 0; bottom: -2px; width: var(--w); height: 3px; background: var(--c, var(--accent)); }
+
+/* ---------- E+ cute stylish: same shapes, lollpop colors ---------- */
+.ui-stylish.ui-stylish-plus {
+  --ink: #3b1f35; --paper: #fff3f8; --card: #fff; --paper-lines: rgba(255, 79, 154, 0.12); --outline: rgba(59, 31, 53, 0.14);
+  --accent: #ff4f9a; --accent-soft: #ffd6e8; --accent-on-ink: #ff9ec8; --muted: #b07a98; --muted-2: #8d5a78;
+  --track: #f6d9e7; --seg: #ff7fb6; --seg-used: #5a3a52; --fever-bar: linear-gradient(90deg, #ff4f9a, #ff9ec8 55%, #ffd44d);
+  --stripe-1: #ec6f80; --stripe-2: #ffd96a; --stripe-3: #a8e2f0; --stripe-4: #7fcb9d; --stripe-5: #ffb3d1; --stripe-opacity: 0.85;
+  --drop: #ffb3d1;
+}
+.ui-stylish-plus .e-deco { position: absolute; width: var(--s); height: var(--s); color: var(--c); transform: rotate(var(--r)); font-style: normal; }
+.ui-stylish-plus .e-deco svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+.ui-stylish-plus .e-deco.bang { width: auto; font-family: "Dela Gothic One", sans-serif; font-size: var(--s); line-height: 1; transform: rotate(var(--r)) skewX(-12deg); }
 `;
 
 // Tag every [data-part] inside a mock with an orange box, in the mock's own (unscaled) coordinates.

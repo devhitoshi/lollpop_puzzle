@@ -1,17 +1,20 @@
-// Pieces of logic shared by both fields (grid and physics).
+// Helpers for the board (js/field-physics.js), kept apart so tests and tools can reuse them.
 //
 // The field contract — what game.js, input.js and render.js rely on:
-//   kind, width, height        size in cell units (one candy ≈ 1 unit across)
-//   pieces                     live pieces: { id, color, x, y, r, angle, squash, alive }
+//   width, height              size in candy units (one candy ≈ 1 unit across)
+//   pieces                     live pieces: { id, color, x, y, r, angle, squash, alive, special? }
+//                              a star candy has special: 'star' and color: null — it never links and is never recolored
 //   pick(x, y, radius)         nearest piece whose center is within radius
 //   isAdjacent(a, b)           spatial link only; color is checked by the caller
-//   remove(ids, { blast })     clears pieces (plus neighbors when blast) and refills; returns removed pieces
+//   remove(ids, { blast, special })  clears pieces (plus neighbors when blast) and refills; returns removed pieces.
+//                              special: { x, y } turns one refill into a star candy at that spot
 //   step(dt)                   advances animation / simulation
 //   isSettled()                nothing is moving
 //   hasMove(min)               some same-color chain of `min` exists
 //   findChain(min)             one such chain as an array of pieces (hints, tutorial, tests)
 //   shuffle()                  recolors until a move exists
 //   blastBottom(depth)         rescue: clears the bottom of the board, refills and remixes colors
+//   kick(x, y, { radius, strength, up })  effects only: pushes candies within radius away from (x, y), plus `up`
 
 import { Spring } from './spring.js';
 
@@ -38,7 +41,7 @@ export function findChain(pieces, isAdjacent, min) {
     for (let j = i + 1; j < pieces.length; j++) {
       const a = pieces[i];
       const b = pieces[j];
-      if (a.color === b.color && isAdjacent(a, b)) {
+      if (a.color !== null && a.color === b.color && isAdjacent(a, b)) {
         neighbors.get(a).push(b);
         neighbors.get(b).push(a);
       }
@@ -80,7 +83,7 @@ export function pickNearest(pieces, x, y, radius) {
 // Recolor everything until a move exists. Colors change in place, so the pile keeps its shape.
 export function recolorUntilMove(field, rng, colorCount, min) {
   for (let attempt = 0; attempt < 60; attempt++) {
-    for (const p of field.pieces) p.color = Math.floor(rng() * colorCount);
+    for (const p of field.pieces) if (!p.special) p.color = Math.floor(rng() * colorCount);
     if (field.hasMove(min)) break;
   }
   if (!field.hasMove(min)) forceChain(field, min);
@@ -92,12 +95,12 @@ export function recolorUntilMove(field, rng, colorCount, min) {
 
 // Last resort: paint a connected run one color. Walks neighbors greedily from the first piece.
 function forceChain(field, min) {
-  const [first] = field.pieces;
+  const first = field.pieces.find((p) => !p.special);
   if (!first) return;
   const run = [first];
   while (run.length < min) {
     const last = run[run.length - 1];
-    const next = field.pieces.find((p) => !run.includes(p) && field.isAdjacent(last, p));
+    const next = field.pieces.find((p) => !p.special && !run.includes(p) && field.isAdjacent(last, p));
     if (!next) break;
     run.push(next);
   }

@@ -2,11 +2,24 @@
 // drawImage, so a frame is ~60 image draws plus a few lines — cheap even on older phones.
 // What a piece looks like comes from the skin (js/skin.js): drawn candy, or piece art scaled once.
 
+import { createParticles } from './particles.js';
+
 const TAU = Math.PI * 2;
+const GOLD = ['#ffd44d', '#ffe98a', '#ffb300', '#ffffff'];
 
 export function createRenderer(canvas, { config, colors, reducedMotion = false }) {
   const ctx = canvas.getContext('2d');
   const R = config.render;
+  const FX = config.fx;
+  const particles = createParticles(FX.maxParticles);
+  const many = (n) => Math.max(1, Math.round(n * (reducedMotion ? FX.reducedParticleScale : 1)));
+  let flashLeft = 0;
+  let flashTotal = 0;
+  let flashAlpha = 0;
+  let flashColor = '#ffffff';
+  let shakeAmp = 0.18;
+  let sparkleDebt = 0; // fractional particles owed by the per-second emitters
+  let goldDebt = 0;
   let dpr = 1;
   let cssW = 0;
   let cssH = 0;
@@ -15,10 +28,17 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
   let oy = 0;
   let field = null;
   let sprites = []; // per color: { normal, happy, radius (field units for a 0.5-radius piece), stick }
+  let starSprite = null; // the star candy (made by long chains), same shape for every skin
+  const STAR_COLOR = '#ff4f9a';
   let skin = null;
   const effects = [];
   let shakeLeft = 0;
   let shakeTotal = 0;
+  // Colors that follow the UI theme (js/theme.js reads them from CSS). Defaults are the old dark look.
+  let theme = { boardBg: '#1a1113', boardTint: 'rgba(255,245,249,0.04)', textStroke: '#1a1113', textFill: '#fff5f9', traceEdge: 'transparent', font: 'sans-serif', display: 'sans-serif', feverRay: 'rgba(255,79,154,0.14)' };
+  const visible = (c) => c && c !== 'transparent' && c !== 'none';
+  // White candies vanish on a light board, so their effects use the accent band color
+  const effectColor = (c) => (c.fill === '#ffffff' ? c.band ?? c.rim : c.fill);
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
@@ -34,8 +54,9 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
     buildSprites();
   }
 
+  const spriteOf = (p) => (p.special ? starSprite : sprites[p.color]);
   // Drawn radius of a piece, in field units
-  const candyR = (p) => ((sprites[p.color]?.radius ?? R.candyRadius) / 0.5) * p.r;
+  const candyR = (p) => ((spriteOf(p)?.radius ?? R.candyRadius) / 0.5) * p.r;
 
   function buildSprites() {
     sprites = colors.map((c, i) => {
@@ -46,6 +67,52 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
       }
       return { normal: drawCandy(c, R.candyRadius * scale * dpr), happy: null, radius: R.candyRadius, stick: true };
     });
+    starSprite = { normal: drawStar(R.starRadius * scale * dpr), happy: null, radius: R.starRadius, stick: false };
+  }
+
+  // Star candy: a glowing pink star with a white rim and a "!" — reads as "tap me" on any skin
+  function drawStar(radius) {
+    const size = Math.ceil(radius * 2.6);
+    const off = document.createElement('canvas');
+    off.width = size;
+    off.height = size;
+    const g = off.getContext('2d');
+    const c = size / 2;
+    const glow = g.createRadialGradient(c, c, radius * 0.4, c, c, size / 2);
+    glow.addColorStop(0, 'rgba(255,214,232,0.9)');
+    glow.addColorStop(1, 'rgba(255,214,232,0)');
+    g.fillStyle = glow;
+    g.fillRect(0, 0, size, size);
+
+    g.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 5;
+      const rr = i % 2 === 0 ? radius * 1.08 : radius * 0.56;
+      const x = c + Math.cos(a) * rr;
+      const y = c + Math.sin(a) * rr * 1.02 + radius * 0.04;
+      if (i === 0) g.moveTo(x, y);
+      else g.lineTo(x, y);
+    }
+    g.closePath();
+    g.lineJoin = 'round';
+    g.lineWidth = radius * 0.2;
+    g.strokeStyle = '#ffffff';
+    g.stroke();
+    const fill = g.createLinearGradient(0, c - radius, 0, c + radius);
+    fill.addColorStop(0, '#ff9ec8');
+    fill.addColorStop(1, STAR_COLOR);
+    g.fillStyle = fill;
+    g.fill();
+
+    g.font = `900 ${radius * 0.9}px sans-serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.lineWidth = radius * 0.14;
+    g.strokeStyle = '#3b1f35';
+    g.strokeText('!', c, c + radius * 0.1);
+    g.fillStyle = '#ffffff';
+    g.fillText('!', c, c + radius * 0.1);
+    return off;
   }
 
   // Piece art is 512 × 512 with the character in a centered 460 box (assets/skins/README.md),
@@ -114,8 +181,12 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
 
   function drawBackground(t, feverLevel) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = '#1a1113';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (visible(theme.boardBg)) {
+      ctx.fillStyle = theme.boardBg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     if (feverLevel > 0) {
       // Five member colors drifting across the box
@@ -131,8 +202,57 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
       ctx.globalAlpha = 1;
     }
 
-    ctx.fillStyle = 'rgba(255,245,249,0.04)';
-    ctx.fillRect(X(0), Y(0), field.width * scale * dpr, field.height * scale * dpr);
+    if (visible(theme.boardTint)) {
+      ctx.fillStyle = theme.boardTint;
+      ctx.fillRect(X(0), Y(0), field.width * scale * dpr, field.height * scale * dpr);
+    }
+
+    if (feverLevel > 0.05) {
+      // Light rays turning slowly behind the candies
+      const cx = X(field.width / 2);
+      const cy = Y(field.height * 0.55);
+      const len = Math.hypot(field.width, field.height) * scale * dpr;
+      const turn = reducedMotion ? 0 : t * 0.35;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(X(0), Y(0), field.width * scale * dpr, field.height * scale * dpr);
+      ctx.clip();
+      ctx.globalAlpha = feverLevel;
+      ctx.fillStyle = theme.feverRay;
+      for (let i = 0; i < 12; i++) {
+        const a = turn + (i / 12) * TAU;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a - 0.09) * len, cy + Math.sin(a - 0.09) * len);
+        ctx.lineTo(cx + Math.cos(a + 0.09) * len, cy + Math.sin(a + 0.09) * len);
+        ctx.fill();
+      }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Emitters that run while a mode is on: sparkles rising in fever, gold confetti raining in bonus time
+  function emitAmbient(dt, feverLevel, bonus) {
+    if (dt <= 0) return;
+    if (bonus) {
+      goldDebt += dt * many(FX.bonusConfettiPerSecond);
+      for (; goldDebt >= 1; goldDebt--) {
+        particles.spawn({
+          x: Math.random() * field.width, y: -0.4, vx: (Math.random() - 0.5) * 1.5, vy: 2 + Math.random() * 2.5,
+          gravity: 1.5, drag: 0.3, life: 2.8, size: 0.13, shape: 'confetti', color: GOLD[Math.floor(Math.random() * GOLD.length)],
+        });
+      }
+    } else if (feverLevel > 0.5) {
+      sparkleDebt += dt * many(FX.sparklesPerSecond) * feverLevel;
+      for (; sparkleDebt >= 1; sparkleDebt--) {
+        const c = colors[Math.floor(Math.random() * colors.length)];
+        particles.spawn({
+          x: Math.random() * field.width, y: field.height + 0.2, vx: (Math.random() - 0.5) * 0.6, vy: -(2.5 + Math.random() * 2.5),
+          gravity: 0.6, drag: 0.2, life: 1.6, size: 0.07 + Math.random() * 0.06, shape: Math.random() < 0.5 ? 'star' : 'dot', color: Math.random() < 0.4 ? '#ffffff' : effectColor(c),
+        });
+      }
+    }
   }
 
   function pieceTransform(p, extraScale = 1) {
@@ -169,11 +289,12 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
     }
   }
 
-  function drawCandies(pieces, selected) {
+  function drawCandies(pieces, selected, t) {
     for (const p of pieces) {
       const isSel = selected.has(p);
-      const { sx, sy, bx, by } = pieceTransform(p, isSel ? R.selectedScale : 1);
-      const sprite = sprites[p.color];
+      const pulse = p.special && !reducedMotion ? 1 + 0.07 * Math.sin(t * 5 + p.id) : 1;
+      const { sx, sy, bx, by } = pieceTransform(p, (isSel ? R.selectedScale : 1) * pulse);
+      const sprite = spriteOf(p);
       const img = isSel && sprite.happy ? sprite.happy : sprite.normal;
       const k = p.r / 0.5;
       ctx.setTransform(sx * k, 0, 0, sy * k, bx, by);
@@ -192,10 +313,11 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    const color = colors[trace[0].color];
+    const color = colors[trace[0].color] ?? { rim: STAR_COLOR };
     const r = candyR(trace[0]) * R.selectedScale;
     const pulse = reducedMotion ? 0 : Math.sin(t * 7) * R.traceOutlinePulse;
     const layers = [
+      ...(visible(theme.traceEdge) ? [[r + R.traceOutline + R.traceEdge + pulse, theme.traceEdge]] : []),
       [r + R.traceOutline + pulse, '#ffffff'],
       [r + R.traceInset, color.band ?? color.rim],
     ];
@@ -227,40 +349,43 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
         ctx.beginPath();
         ctx.arc(X(e.x), Y(e.y), r, 0, TAU);
         ctx.stroke();
-        ctx.fillStyle = e.color;
-        for (let j = 0; j < 6; j++) {
-          const a = e.seed + (j / 6) * TAU;
-          const d = (e.r + k * 0.9) * scale * dpr;
-          ctx.beginPath();
-          ctx.arc(X(e.x) + Math.cos(a) * d, Y(e.y) + Math.sin(a) * d, 0.07 * (1 - k) * scale * dpr, 0, TAU);
-          ctx.fill();
-        }
       } else if (e.kind === 'boom') {
-        // Rescue: a flash rising from the floor plus sparks in the five member colors
+        // Rescue: a flash rising from the floor (the sparks are particles)
         const flashH = field.height * 0.55 * scale * dpr;
         const grad = ctx.createLinearGradient(0, Y(field.height), 0, Y(field.height) - flashH);
         grad.addColorStop(0, `rgba(255,245,200,${0.85 * (1 - k)})`);
         grad.addColorStop(1, 'rgba(255,245,200,0)');
         ctx.fillStyle = grad;
         ctx.fillRect(X(0), Y(field.height) - flashH, field.width * scale * dpr, flashH);
-        for (const s of e.sparks) {
-          const x = s.x + s.vx * e.t;
-          const y = s.y + s.vy * e.t + 9 * e.t * e.t;
-          ctx.globalAlpha = 1 - k;
-          ctx.fillStyle = s.color;
+      } else if (e.kind === 'burst') {
+        // Star candy: a ring growing to the blast reach (the sparks are particles)
+        ctx.globalAlpha = 1 - k;
+        ctx.strokeStyle = STAR_COLOR;
+        ctx.lineWidth = 0.18 * (1 - k) * scale * dpr;
+        ctx.beginPath();
+        ctx.arc(X(e.x), Y(e.y), e.reach * (0.3 + 0.7 * Math.sqrt(k)) * scale * dpr, 0, TAU);
+        ctx.stroke();
+        // A second, white ring a moment later
+        const k2 = Math.max(0, k - 0.15) / 0.85;
+        if (k2 > 0) {
+          ctx.globalAlpha = 1 - k2;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 0.12 * (1 - k2) * scale * dpr;
           ctx.beginPath();
-          ctx.arc(X(x), Y(y), s.size * (1 - k * 0.6) * scale * dpr, 0, TAU);
-          ctx.fill();
+          ctx.arc(X(e.x), Y(e.y), e.reach * 1.15 * Math.sqrt(k2) * scale * dpr, 0, TAU);
+          ctx.stroke();
         }
       } else if (e.kind === 'text') {
-        const rise = reducedMotion ? 0 : k * 0.9;
-        ctx.globalAlpha = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
-        const size = e.size * scale * dpr * (reducedMotion ? 1 : Math.min(1, 0.6 + k * 4));
-        ctx.font = `700 ${size}px "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif`;
+        const rise = reducedMotion || e.impact ? 0 : k * 0.9;
+        ctx.globalAlpha = (k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3) * e.alpha;
+        // impact: lands big and settles (1.8× → 1×); normal: grows in quickly
+        const grow = e.impact ? 1 + 0.8 * Math.max(0, 1 - k / 0.14) : Math.min(1, 0.6 + k * 4);
+        const size = e.size * scale * dpr * (reducedMotion ? 1 : grow);
+        ctx.font = e.impact ? `400 ${size}px ${theme.display}` : `800 ${size}px ${theme.font}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.lineWidth = size * 0.18;
-        ctx.strokeStyle = '#1a1113';
+        ctx.strokeStyle = theme.textStroke;
         const x = Math.min(Math.max(X(e.x), size * e.text.length * 0.5), canvas.width - size * e.text.length * 0.5);
         ctx.strokeText(e.text, x, Y(e.y - rise));
         ctx.fillStyle = e.color;
@@ -274,6 +399,10 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
     setField(f) {
       field = f;
       resize();
+    },
+
+    setTheme(t) {
+      theme = { ...theme, ...t };
     },
 
     setSkin(s) {
@@ -294,49 +423,106 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
 
     clearEffects() {
       effects.length = 0;
+      particles.clear();
     },
 
     blast(removed) {
       this.pop(removed);
-      const sparks = [];
-      for (let i = 0; i < 70; i++) {
+      const n = many(70);
+      for (let i = 0; i < n; i++) {
         const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4;
         const speed = 4 + Math.random() * 9;
-        sparks.push({
-          x: Math.random() * field.width,
-          y: field.height - Math.random() * 0.8,
-          vx: Math.cos(a) * speed,
-          vy: Math.sin(a) * speed,
-          size: 0.05 + Math.random() * 0.1,
-          color: colors[i % colors.length].fill,
+        particles.spawn({
+          x: Math.random() * field.width, y: field.height - Math.random() * 0.8, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+          gravity: 9, drag: 0.8, life: R.boomDuration, size: 0.05 + Math.random() * 0.1, shape: i % 4 === 0 ? 'confetti' : 'dot', color: effectColor(colors[i % colors.length]),
         });
       }
-      effects.push({ kind: 'boom', t: 0, life: R.boomDuration, sparks });
+      effects.push({ kind: 'boom', t: 0, life: R.boomDuration });
     },
 
-    shake(seconds) {
+    // Star candy: two rings and a shower of stars and confetti
+    burst(x, y, reach) {
+      const n = many(FX.starParticles);
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * TAU;
+        const speed = 3 + Math.random() * 8;
+        particles.spawn({
+          x, y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed - 2, gravity: 8, drag: 1.2, life: 0.9 + Math.random() * 0.5,
+          size: 0.08 + Math.random() * 0.08, shape: ['star', 'confetti', 'heart', 'dot'][i % 4], color: i % 3 === 0 ? STAR_COLOR : effectColor(colors[i % colors.length]),
+        });
+      }
+      effects.push({ kind: 'burst', x, y, reach, t: 0, life: R.boomDuration * 0.8 });
+    },
+
+    // A clear: confetti from each removed candy, more for longer chains
+    celebrate(removed, tracedLength) {
+      const cp = FX.clearParticles;
+      const total = many(Math.min(cp.max, cp.base + Math.max(0, tracedLength - 3) * cp.perExtra));
+      const src = removed.length ? removed : [];
+      for (let i = 0; i < total && src.length; i++) {
+        const p = src[i % src.length];
+        const a = Math.random() * TAU;
+        const speed = 2 + Math.random() * (2 + tracedLength * 0.5);
+        const c = p.special ? null : colors[p.color];
+        particles.spawn({
+          x: p.x, y: p.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed - 2.5, gravity: 9, drag: 1.4, life: 0.6 + Math.random() * 0.4,
+          size: 0.06 + Math.random() * 0.07, shape: i % 5 === 0 ? 'star' : 'confetti', color: i % 5 === 0 ? '#ffffff' : c ? effectColor(c) : STAR_COLOR,
+        });
+      }
+    },
+
+    // Fever start: confetti fountains from the two bottom corners
+    feverConfetti() {
+      const n = many(FX.feverConfetti);
+      for (let i = 0; i < n; i++) {
+        const left = i % 2 === 0;
+        const a = -Math.PI / 2 + (left ? 0.45 : -0.45) + (Math.random() - 0.5) * 0.5;
+        const speed = 9 + Math.random() * 7;
+        particles.spawn({
+          x: left ? 0.2 : field.width - 0.2, y: field.height, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, gravity: 10, drag: 1.1,
+          life: 1.4 + Math.random() * 0.6, size: 0.1 + Math.random() * 0.06, shape: i % 6 === 0 ? 'heart' : 'confetti', color: effectColor(colors[i % colors.length]),
+        });
+      }
+    },
+
+    shake(seconds, amp = 0.18) {
       if (reducedMotion) return;
       shakeLeft = seconds;
       shakeTotal = seconds;
+      shakeAmp = amp;
+    },
+
+    // Whole-canvas light that fades out. Off with reduce motion.
+    flash(alpha, color = '#ffffff', seconds = 0.25) {
+      if (reducedMotion) return;
+      flashAlpha = alpha;
+      flashColor = color;
+      flashLeft = seconds;
+      flashTotal = seconds;
+    },
+
+    // Big word in the middle of the board (NICE!, 10 COMBO!, countdown numbers)
+    bigText(str, { y = null, color = '#ffffff', size = 1.1, life = 1.0, alpha = 1 } = {}) {
+      effects.push({ kind: 'text', impact: true, text: str, x: field.width / 2, y: y ?? field.height * 0.42, color, size, t: 0, life, alpha });
     },
 
     pop(pieces) {
       for (const p of pieces) {
-        effects.push({ kind: 'pop', x: p.x, y: p.y, r: candyR(p), color: colors[p.color].fill, t: 0, life: R.popDuration, seed: Math.random() * TAU });
+        effects.push({ kind: 'pop', x: p.x, y: p.y, r: candyR(p), color: p.special ? STAR_COLOR : effectColor(colors[p.color]), t: 0, life: R.popDuration, seed: Math.random() * TAU });
       }
     },
 
-    text(str, x, y, { color = '#fff5f9', size = 0.55, life = R.wordDuration } = {}) {
-      effects.push({ kind: 'text', text: str, x, y, color, size, t: 0, life });
+    text(str, x, y, { color = theme.textFill, size = 0.55, life = R.wordDuration } = {}) {
+      effects.push({ kind: 'text', text: str, x, y, color, size, t: 0, life, alpha: 1 });
     },
 
-    draw({ t, dt, trace = [], feverLevel = 0 }) {
+    draw({ t, dt, trace = [], feverLevel = 0, bonus = false }) {
       if (!field) return;
       const baseX = ox;
       const baseY = oy;
       if (shakeLeft > 0) {
         shakeLeft = Math.max(0, shakeLeft - dt);
-        const amp = 0.18 * scale * (shakeLeft / shakeTotal);
+        const amp = shakeAmp * scale * (shakeLeft / shakeTotal);
         ox += (Math.random() - 0.5) * 2 * amp;
         oy += (Math.random() - 0.5) * 2 * amp;
       }
@@ -348,9 +534,19 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
       ctx.clip();
       drawSticks(field.pieces, selected);
       drawTraceBand(trace, t);
-      drawCandies(field.pieces, selected);
+      drawCandies(field.pieces, selected, t);
       ctx.restore();
       drawEffects(dt);
+      emitAmbient(dt, feverLevel, bonus);
+      particles.step(dt);
+      particles.draw(ctx, X, Y, scale * dpr);
+      if (flashLeft > 0) {
+        flashLeft = Math.max(0, flashLeft - dt);
+        ctx.globalAlpha = flashAlpha * (flashLeft / flashTotal);
+        ctx.fillStyle = flashColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1;
+      }
       ox = baseX;
       oy = baseY;
     },

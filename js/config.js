@@ -13,7 +13,7 @@ export const COLORS = [
 export const CONFIG = {
   // Match length and timing
   game: {
-    duration: 180, // seconds
+    duration: 60, // seconds (timed mode)
     minChain: 3, // pieces needed to clear
     startTimerOnFirstClear: true, // don't burn time while a first-timer is figuring it out
     hurryAt: 10, // seconds left when the timer starts to pulse
@@ -26,7 +26,7 @@ export const CONFIG = {
     longBonus: 45,
     comboStep: 0.1, // multiplier added per combo
     comboCap: 30, // multiplier stops growing here (×4.0)
-    feverMultiplier: 2,
+    feverMultiplier: 3,
   },
 
   combo: {
@@ -35,30 +35,16 @@ export const CONFIG = {
 
   fever: {
     bangsToFever: 7, // "!" count — !!!!!!!
-    duration: 8, // seconds
+    piecesPerBang: 8, // one "!" per this many cleared pieces (7 × 8 = 56). Rare and long, so each fever feels big
+    timeBonus: 5, // seconds added when fever starts (endless: up to the life cap)
+    duration: 12, // seconds (Tsum Tsum: 11)
     warnAt: 2, // seconds left when the fever timer starts to blink and tick
-    blastCells: 1, // grid: clear this many cells around every traced piece
-    blastFactor: 1.6, // physics: clear bodies within (rA + rB) × factor
+    blastFactor: 2, // clear candies within (rA + rB) × factor of a traced one
   },
 
-  // ?feel=grid
-  grid: {
-    cols: 7,
-    rows: 8,
-    adjacency: 8, // ?adj=4|8 — 8 allows diagonal links
-    gravity: 60, // cells / s²
-    maxFall: 22, // cells / s
-    spawnGap: 1.15, // vertical spacing of refills above the board
-    // Landing squash: the candy flattens on impact and wobbles back (the "ぽよん")
-    squashPerSpeed: 0.045, // scale lost per cell/s of impact speed
-    squashMax: 0.45,
-    squashSpring: { response: 0.38, dampingFraction: 0.2 }, // low damping = long, wide wobble
-    bounce: 0.32, // fraction of the impact speed that bounces back up
-  },
-
-  // ?feel=physics
+  // The board: round candies piling up in a box
   physics: {
-    width: 7, // same visual footprint as the grid
+    width: 7, // box size in candy units (one candy ≈ 1 across)
     height: 8,
     count: 46,
     radius: 0.5,
@@ -79,11 +65,36 @@ export const CONFIG = {
     squashSpring: { response: 0.36, dampingFraction: 0.2 },
   },
 
+  // Timed mode's last seconds: "!" fills faster, and a fever that is still going when time runs out
+  // keeps the match alive until it ends (bonus time).
+  lastSpurt: {
+    at: 10, // seconds left
+    piecesPerBang: 2, // instead of fever.piecesPerBang (balance.mjs: a bot clearing every 2.5 s still reaches a final fever 10 times in 12)
+  },
+
+  // Endless mode (?mode=endless): timeLeft is a life gauge. It drains faster over time; clearing refills it.
+  endless: {
+    start: 10, // seconds of life at the start
+    max: 10, // life can't go above this
+    perPiece: 0.6, // life refilled per cleared piece
+    drain: 1, // life lost per second at the start
+    drainGrowth: 0.012, // drain speeds up by this fraction per second played
+    drainMax: 2.5, // drain never gets faster than this
+    hurryAt: 3, // life left when the gauge starts to pulse
+    fullScore: 400000, // 100% of 「ポップなお祭り度」 in endless (provisional; balance.mjs: clearing every 1.2 s averages ~320k)
+  },
+
+  // Star candy: made by long chains, tapped to blow up its neighbors
+  special: {
+    minChain: 7, // traced pieces needed to make one
+    max: 3, // stars on the board at once
+    blast: 2.2, // clears candies within (rA + rB) × blast of the star
+  },
+
   // Rescue: blow up the bottom of the board and remix the colors. No score, no "!", combo kept.
   rescue: {
     count: 3, // per match
-    gridRows: 2, // grid: bottom rows removed
-    physicsDepth: 2.2, // physics: bodies whose center is within this distance of the floor
+    physicsDepth: 2.2, // candies whose center is within this distance of the floor
     shake: 0.35, // seconds of board shake
   },
 
@@ -104,23 +115,64 @@ export const CONFIG = {
     storageKey: 'lollpop-puzzle:skin',
   },
 
+  // UI theme. ?theme= overrides. Colors and shapes live in css/themes/<name>.css
+  theme: {
+    default: 'stylish', // used when the player hasn't chosen yet
+    // Shown on the title screen (T9). ready: false shows 「準備中」 and can't be picked.
+    choices: [
+      { name: 'stylish', label: 'スタイリッシュ' },
+      { name: 'candy', label: 'キャンディ', ready: false },
+    ],
+    storageKey: 'lollpop-puzzle:theme',
+  },
+
   render: {
     maxDpr: 2,
     candyRadius: 0.42, // drawn candy size relative to one cell / body diameter
     artRadius: 0.49, // piece art (skins with images) fills more of the cell than a candy
+    starRadius: 0.44, // star candy (CONFIG.special)
     stickLength: 0.66,
     selectedScale: 1.1,
     traceOutline: 0.1, // white rim of the trace capsule, beyond the candy edge
     traceInset: 0.035, // colored band just outside the candy edge
+    traceEdge: 0.035, // thin dark line outside the white rim, for light themes (--trace-edge)
     traceOutlinePulse: 0.02,
     boomDuration: 0.9,
     popDuration: 0.32,
     wordDuration: 1.1,
   },
 
+  // Effects. Kicks are velocities in candy units / s; shakes are seconds; flashes are peak opacity.
+  // With "reduce motion" there are no kicks, shakes, flashes or spinning rays, and particles are halved.
+  fx: {
+    maxParticles: 400,
+    clearParticles: { base: 12, perExtra: 7, max: 40 }, // 3 pieces → 12, 7 or more → 40
+    bigChain: 6, // pieces: small shake, white flash and a word
+    words: [
+      { min: 10, text: 'AMAZING!' },
+      { min: 8, text: 'GREAT!' },
+      { min: 6, text: 'NICE!' },
+    ],
+    comboMilestone: 10, // "10 COMBO!" every this many
+    kickClear: 2.2, // outward push from a clear, times (pieces - 2)
+    kickStar: 9,
+    kickFever: 8, // every candy hops up when fever starts
+    shakeBig: 0.16,
+    shakeStar: 0.32,
+    flashBig: 0.22,
+    flashStar: 0.45,
+    flashFever: 0.4,
+    feverConfetti: 80,
+    starParticles: 60,
+    sparklesPerSecond: 14, // rising from the board during fever
+    bonusConfettiPerSecond: 24, // gold confetti during bonus time
+    countdownFrom: 5, // big faint numbers in the last seconds
+    reducedParticleScale: 0.5,
+  },
+
   // 「ポップなお祭り度」 on the result screen. Tune fullScore after playtesting.
   result: {
-    fullScore: 300000, // 100% at this score (provisional: a bot clearing every 1.5 s scores ~330k–460k)
+    fullScore: 200000, // 100% at this score (provisional; scripts/balance.mjs: a bot clearing every 1.5 s averages ~160k)
     tiers: [
       { min: 0, label: 'お祭りの準備中' },
       { min: 25, label: '屋台めぐり' },
@@ -128,9 +180,37 @@ export const CONFIG = {
       { min: 75, label: '楽しさ無限大' },
       { min: 100, label: 'ポップなお祭りの主役' },
     ],
+    // Rank letter on the result screen (provisional)
+    ranks: [
+      { min: 90, rank: 'S' },
+      { min: 70, rank: 'A' },
+      { min: 40, rank: 'B' },
+      { min: 0, rank: 'C' },
+    ],
+    // Result bars are full at these values. Score uses the festival %, 推し色 its share of cleared pieces.
+    bars: {
+      combo: 30,
+      fever: 5,
+      elapsed: 120, // endless: seconds survived
+    },
+    bestKey: 'lollpop-puzzle:best', // + ':timed' / ':endless'
   },
 
   sound: {
     volume: 0.5,
+  },
+
+  // Vibration (ms, or a pattern). Android uses navigator.vibrate. iPhone has no vibration API, so js/haptics.js
+  // gives a single light tick on button taps instead (tracing can't vibrate there).
+  vibration: {
+    link: 12, // each candy added to the trace
+    clear: 22,
+    clearLong: 35, // 6 or more pieces
+    star: [30, 30, 60],
+    starMade: [15, 40, 15],
+    fever: [25, 40, 25, 40, 70],
+    boom: [40, 30, 90],
+    end: 60,
+    storageKey: 'lollpop-puzzle:vibration', // 'on' | 'off'
   },
 };
