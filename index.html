@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>!!!!!!! 落ちものパズル｜アイドル「ろりぽっぷ!!!!!!!」の非公式ファンゲーム</title>
+  <meta name="description" content="アイドルグループ「ろりぽっぷ!!!!!!!」のメンバーカラーのロリポップを、なぞって消す 3 分間のパズル。非公式のファン制作です。">
+  <meta name="theme-color" content="#1a1113">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/game.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <div class="app" id="app" data-screen="title">
+    <header class="hud" data-part="H">
+      <div class="hud-cell" data-part="H1">
+        <span class="hud-label">のこり</span>
+        <span class="hud-value" id="time">3:00</span>
+      </div>
+      <div class="hud-bangs" id="bangs" data-part="H3" aria-label="! ゲージ">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div class="hud-cell hud-cell-end" data-part="H2">
+        <span class="hud-label">スコア</span>
+        <span class="hud-value" id="score">0</span>
+      </div>
+    </header>
+
+    <div class="stage">
+      <canvas id="board" aria-label="パズルの盤面" data-part="B1"></canvas>
+      <div class="combo" id="combo" data-part="C" aria-live="polite"><b id="combo-n">0</b><span>COMBO</span></div>
+      <div class="fever" id="fever" data-part="F">!!!!!!! FEVER</div>
+      <div class="fever-timer" id="fever-timer" data-part="F2" aria-hidden="true">
+        <span class="fever-timer-label">FEVER</span>
+        <span class="fever-timer-bar"><i id="fever-bar"></i></span>
+        <span class="fever-timer-sec">あと <b id="fever-sec">8</b></span>
+      </div>
+      <div class="toast" id="toast" role="status" data-part="B3"></div>
+      <div class="start-hint" id="start-hint" data-part="B2">なぞってスタート</div>
+    </div>
+
+    <div class="actions">
+      <button class="rescue" id="rescue" data-part="Q1" aria-label="下を爆発させて混ぜ直す">
+        <span class="rescue-label">ボム</span>
+        <span class="rescue-sub">下をふっとばして まぜる</span>
+        <span class="rescue-pips" id="rescue-pips"><i></i><i></i><i></i></span>
+      </button>
+    </div>
+
+    <footer class="credit" data-part="B4">非公式のファン制作（AIぽっぱー）</footer>
+
+    <section class="screen screen-title" id="screen-title" data-part="T">
+      <div class="band band-white">
+        <p class="eyebrow" data-part="T1">🍭 ろりぽっぷ!!!!!!! 非公式ファンゲーム</p>
+        <h1 class="title-logo" data-part="T2"><span class="title-bang">!!!!!!!</span>落ちものパズル</h1>
+        <p class="lead" data-part="T5">同じ色のロリポップを 3 つ以上なぞって消そう。<br>3 分間でどこまでいける？</p>
+      </div>
+      <div class="band band-dark title-actions">
+        <div class="skin-switch" id="skin-switch" role="radiogroup" aria-label="駒の見た目" data-part="T8"></div>
+        <button class="btn btn-primary" id="btn-play" data-part="T3">あそぶ</button>
+        <button class="btn btn-ghost" id="btn-howto" data-part="T4" disabled>遊び方</button>
+        <p class="note" data-part="T6">非公式のファン制作（AIぽっぱー）です。<br>ろりぽっぷ!!!!!!! の運営・GMOペパボとは関係ありません。</p>
+        <p class="note" id="skin-credit" data-part="T7" hidden></p>
+      </div>
+    </section>
+
+    <section class="screen screen-result" id="screen-result" data-part="R" aria-labelledby="result-heading">
+      <div class="band band-white">
+        <p class="eyebrow" id="result-heading">RESULT</p>
+        <div class="festival" data-part="R1">
+          <span class="festival-label">ポップなお祭り度</span>
+          <span class="festival-value"><b id="r-percent">0</b>%</span>
+          <span class="festival-tier" id="r-tier"></span>
+        </div>
+        <dl class="stats" data-part="R2">
+          <div><dt>スコア</dt><dd id="r-score">0</dd></div>
+          <div><dt>最大コンボ</dt><dd id="r-combo">0</dd></div>
+          <div><dt>フィーバー</dt><dd id="r-fever">0 回</dd></div>
+          <div><dt>今日の推し色</dt><dd id="r-favorite">—</dd></div>
+        </dl>
+      </div>
+      <div class="band band-dark result-actions">
+        <button class="btn btn-primary" id="btn-again" data-part="R3">もう一回</button>
+        <button class="btn btn-ghost" id="btn-title" data-part="R4">タイトルへ</button>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "title": "飴",
+  "stick": true,
+  "credit": "",
+  "pieces": [
+    { "key": "kurumi", "name": "くるみ" },
+    { "key": "mayu", "name": "まゆ" },
+    { "key": "mau", "name": "まう" },
+    { "key": "ami", "name": "あみ" },
+    { "key": "mana", "name": "まな" }
+  ]
+}

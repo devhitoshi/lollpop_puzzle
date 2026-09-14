@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>!!!!!!! 落ちものパズル 画面設計</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap">
+<!--
+  設計書（app-spec-flow）。番号の接頭辞：G 画面／T タイトル／H 上部／B 盤面／C コンボ／F フィーバー／R 結果／W はじめての説明／S 共有カード／A とは／M 動きと音
+  - SCREENS：実装済みの状態を ?pos= で止めて iframe で並べる。番号札は ?labels=
+  - VARIANTS：落ち方と斜めつなぎの 3 案をタブで切り替える
+  - MOCKS：まだ作っていない画面の案（静的モック）。作ったら SCREENS に移す
+  - MOTION：値は js/config.js をそのまま読んで表示する
+  部品を足したら index.html に data-part を振り、screensFor に 1 行足す。
+-->
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f2f2f7; --card: #fff; --soft: #e9e9ee; --label: #000; --label-2: rgba(60, 60, 67, 0.6);
+    --sep: rgba(60, 60, 67, 0.18); --tag: #ff9f0a; --tint: #007aff;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #000; --card: #1c1c1e; --soft: #2c2c2e; --label: #fff; --label-2: rgba(235, 235, 245, 0.6); --sep: rgba(84, 84, 88, 0.6); --tint: #0a84ff; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--label); -webkit-font-smoothing: antialiased; }
+  main { max-width: 1200px; margin: 0 auto; padding: 32px 20px 96px; }
+  h1 { margin: 0 0 6px; font-size: 30px; }
+  h2 { margin: 48px 0 12px; font-size: 22px; }
+  .lead { margin: 0 0 18px; color: var(--label-2); line-height: 1.7; }
+  .box { padding: 16px 20px; border-radius: 18px; background: var(--card); line-height: 1.8; }
+  .box ol, .box ul { margin: 0; padding-left: 1.4em; }
+  .box li + li { margin-top: 6px; }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.88em; padding: 1px 5px; border-radius: 5px; background: rgba(127, 127, 127, 0.14); }
+  a { color: var(--tint); }
+  .bar { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 18px -20px 0; padding: 10px 20px;
+         background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .bar small { color: var(--label-2); }
+  .tabs { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--soft); }
+  .tabs button { border: 0; padding: 7px 16px; border-radius: 999px; background: transparent; color: var(--label); font: 600 14px/1 inherit; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--card); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12); }
+  .screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(540px, 1fr)); gap: 20px; }
+  .screen { display: flex; gap: 18px; align-items: flex-start; padding: 18px; border-radius: 22px; background: var(--card); }
+  .frame { --s: 0.56; position: relative; flex: none; width: calc(390px * var(--s)); height: calc(844px * var(--s)); overflow: hidden; border-radius: calc(46px * var(--s)); background: #000; box-shadow: 0 0 0 1px var(--sep); }
+  .frame iframe, .frame .mock { width: 390px; height: 844px; border: 0; transform: scale(var(--s)); transform-origin: 0 0; }
+  .meta { flex: 1; min-width: 0; }
+  .meta h3 { margin: 2px 0 6px; font-size: 18px; }
+  .meta p { margin: 0 0 10px; color: var(--label-2); font-size: 13px; line-height: 1.6; }
+  .badge { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: #34c759; color: #fff; font-size: 11px; font-weight: 700; vertical-align: 2px; }
+  .badge.plan { background: #8e8e93; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 7px 6px; border-top: 0.5px solid var(--sep); text-align: left; vertical-align: top; line-height: 1.5; }
+  th { color: var(--label-2); font-size: 12px; font-weight: 600; }
+  .id { display: inline-block; min-width: 2.6em; padding: 1px 6px; border-radius: 6px; background: var(--tag); color: #000; text-align: center; font: 700 11.5px/1.4 ui-monospace, Menlo, Consolas, monospace; }
+  .id.nolabel { background: transparent; box-shadow: inset 0 0 0 1.5px var(--tag); color: var(--label); }
+  .where, .value { color: var(--label-2); font-size: 12px; }
+  .card-table { padding: 6px 16px 10px; border-radius: 18px; background: var(--card); overflow-x: auto; }
+  @media (max-width: 640px) { .screens { grid-template-columns: 1fr; } .screen { flex-direction: column; align-items: center; } .meta { width: 100%; } .hide-sm { display: none; } }
+
+  /* ---- static mocks (same tokens as the game: css/tokens.css) */
+  .mock { position: relative; overflow: hidden; background: #1a1113; color: #fff5f9; font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif; }
+  .mock .t { position: absolute; top: 0; left: 0; padding: 1px 6px; border-radius: 6px; background: var(--tag); color: #000; font: 700 13px/1.35 ui-monospace, Menlo, Consolas, monospace; z-index: 5; }
+  .mock .box-l { position: absolute; outline: 2px dashed rgba(255, 159, 10, 0.95); outline-offset: -1px; border-radius: 4px; }
+  .m-board { position: absolute; left: 8px; right: 8px; display: grid; gap: 0; background: rgba(255, 245, 249, 0.04); }
+  .m-candy { aspect-ratio: 1; margin: 6px; border-radius: 50%; box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.25), inset -8px -8px 0 rgba(0, 0, 0, 0.08), inset 6px 6px 0 rgba(255, 255, 255, 0.35); }
+  .m-candy.dim { opacity: 0.25; }
+  .m-candy.glow { box-shadow: 0 0 0 5px #fff, 0 0 18px 8px rgba(255, 255, 255, 0.7), inset 0 0 0 3px rgba(0, 0, 0, 0.25); }
+  .m-top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 18px 18px 0; }
+  .m-steps { display: flex; gap: 6px; }
+  .m-steps i { width: 26px; height: 5px; background: rgba(255, 245, 249, 0.2); }
+  .m-steps i.on { background: #ff9ecb; }
+  .m-skip { padding: 8px 14px; border-radius: 8px; box-shadow: inset 0 0 0 1.5px #ff9ecb; color: #ff9ecb; font-weight: 700; font-size: 15px; }
+  .m-band { position: absolute; left: 0; right: 0; padding: 22px 24px; }
+  .m-band.white { background: #fff; color: #45383e; }
+  .m-band h4 { margin: 0 0 6px; color: #1d1216; font-size: 24px; }
+  .m-band p { margin: 0; font-size: 15px; line-height: 1.8; }
+  .m-finger { position: absolute; width: 54px; height: 54px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.25); }
+  .m-path { position: absolute; height: 12px; background: #fff; border-radius: 6px; transform-origin: 0 50%; box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.35); }
+  .m-btn { display: block; margin-top: 10px; padding: 15px; border-radius: 8px; background: #d6006e; color: #fff; font-weight: 700; font-size: 17px; text-align: center; }
+  .m-btn.ghost { background: transparent; color: #ff9ecb; box-shadow: inset 0 0 0 1.5px #ff9ecb; }
+  .m-bangs { display: flex; gap: 5px; justify-content: center; font-size: 44px; font-weight: 900; line-height: 1; }
+  .m-bangs span:nth-child(1) { color: #cc0000; } .m-bangs span:nth-child(2) { color: #f5c400; } .m-bangs span:nth-child(3) { color: #7fd4e8; }
+  .m-bangs span:nth-child(4) { color: #2e9e5b; } .m-bangs span:nth-child(5) { color: #fff; } .m-bangs span:nth-child(n+6) { color: #ff9ecb; }
+  .m-card { position: absolute; left: 14px; right: 14px; aspect-ratio: 1200 / 630; background: #fff; color: #1d1216; overflow: hidden; }
+  .ui-grid { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 18px; padding: 18px; border-radius: 22px; background: var(--card); overflow-x: auto; }
+  .ui-grid figure { margin: 0; }
+  .ui-grid figcaption { margin-top: 8px; color: var(--label-2); font-size: 13px; text-align: center; }
+  .ui-grid .frame { --s: 0.62; }
+  #ui-concept { margin-bottom: 14px; }
+  #ui-concept b { font-size: 18px; }
+  .m-links a { display: flex; justify-content: space-between; padding: 14px 0; border-top: 1px solid rgba(255, 245, 249, 0.18); color: #ff9ecb; font-weight: 700; text-decoration: none; font-size: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>!!!!!!! 落ちものパズル 画面設計</h1>
+  <p class="lead">
+    実物を状態ごとに止めて並べています。オレンジの番号札が部品の番号です。「B2 を上に」「M2 をもっと弾ませて」のように、番号で指示してください。<br>
+    <b>実装済み</b>の画面は本物を埋め込んでいます。<b>案</b>の画面はまだ作っていないモックなので、作る前に番号で直せます。
+    要件はリポジトリの <code>requirements.md</code>。
+  </p>
+
+  <div class="bar">
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <small>落ち方と斜めつなぎの案。タブを切り替えると上の実物がその案で動きます</small>
+  </div>
+
+  <h2>決めてほしいこと</h2>
+  <div class="box">
+    <ol>
+      <li><b>UI の世界観</b>（U1〜U11）：A キャンディポップで決定済み。追加の D ポップ 3D カジュアル／E スタイリッシュ・アニメ系と見比べて、<b>A／D／E のどれで実装するか</b>を決める（「A、ただし U7 は D」のような組み合わせでもよい）</li>
+      <li><b>今回の修正を触って確認</b>：弾み（M2・M4）、ツムツム型のなぞり線（B6）、救済ボタン（Q1・M19）、フィーバーの残り時間（F2・M20）。<a href="index.html?time=40" target="_blank">40 秒版で遊ぶ</a></li>
+      <li><b>落ち方</b>：マス目＋ぽよん（斜めあり／なし）と物理のどれにするか。スマホで触って選ぶ（<a href="index.html" target="_blank">マス目</a>・<a href="index.html?adj=4" target="_blank">斜めなし</a>・<a href="index.html?feel=physics" target="_blank">物理</a>、<code>&amp;time=20</code> で短く遊べる）</li>
+      <li><b>コンボの猶予</b>（M10）：今は 2.5 秒。1.5 秒ごとに消すと切れず 100 を超える。短くするか、倍率の上限を下げるか</li>
+      <li><b>言葉の一覧</b>（M9）：曲名 26・公式 3・X 19 の案。<code>#まうだよ</code> の裏付けと <code>#おまゆ生誕祭</code> の年号が未確認。長い曲名 4 件は 2 行で出す予定</li>
+      <li><b>ポップなお祭り度の段階名</b>（R1・M15）：「お祭りの準備中／屋台めぐり／お祭りの真ん中／楽しさ無限大／ポップなお祭りの主役」は仮</li>
+      <li><b>案の画面</b>（W・S・R5〜R9・A）：作る前に、並びと文言を番号で直してください</li>
+    </ol>
+  </div>
+
+  <h2>UI の世界観（5 案・未実装）</h2>
+  <p class="lead">タイトル・プレイ中（フィーバー中）・結果を並べています。A で決定済み、D・E は「今のスマホゲーっぽさ」の追加案です。盤面は本物のスクリーンショットで、盤面の地の色は選んだ案に合わせて変えます。救済ボタンの名前も案ごとに変えています。</p>
+  <nav class="tabs" role="tablist" id="ui-tabs" style="margin-bottom:14px"></nav>
+  <div class="box" id="ui-concept"></div>
+  <div class="ui-grid" id="ui-screens"></div>
+  <div class="card-table" style="margin-top:14px"><table id="ui-parts"></table></div>
+
+  <h2>画面（実装済み）</h2>
+  <div class="screens" id="screens"></div>
+
+  <h2>画面（案・未実装）</h2>
+  <div class="screens" id="mocks"></div>
+
+  <h2>動きと音（M）</h2>
+  <p class="lead">「今の値」は <code>js/config.js</code> をそのまま読んで表示しています。キーが無いものは CSS かコードに直接書いています。</p>
+  <div class="card-table"><table id="motion"></table></div>
+
+  <h2>一次情報・方針への対応</h2>
+  <div class="card-table"><table>
+    <tr><th>出典</th><th>決まり</th><th>この作品での対応</th></tr>
+    <tr><td>コンテスト募集要項</td><td>デプロイナウで公開した URL で応募。審査終了まで公開を維持</td><td>本番はデプロイナウ、Cloudflare はプレビュー。ビルドなしの静的サイトなので両方に同じものを置ける</td></tr>
+    <tr><td>design.md</td><td>バンド構成、角丸はボタンだけ、ピンクは押せるものだけ、メンバーカラーは装飾専用</td><td>T・R は白と黒のバンド。ピンクはボタン（T3・R3）と「!!!!!!!」の文字だけ。メンバーカラーは飴と「!」ゲージ（H3）</td></tr>
+    <tr><td>戦略メモ 5 章</td><td>歌詞を載せない／写真・音源は許諾の範囲だけ／非公式を全ページに明記</td><td>飴はコードで描画、効果音は合成。言葉は曲名・公式・X の言葉だけ。B4・T6 と各画面の下に非公式の表記</td></tr>
+    <tr><td>戦略メモ 5 章</td><td>同名グループと区別する</td><td><code>&lt;title&gt;</code> に「アイドル」「ろりぽっぷ!!!!!!!」</td></tr>
+    <tr><td>スマホ</td><td>なぞっている間にスクロール・拡大しない</td><td><code>touch-action: none</code>、Pointer Events、指の軌跡を 0.15 マス刻みで補間（M6）</td></tr>
+    <tr><td>アクセシビリティ</td><td>「視差効果を減らす」</td><td>フィーバーの脈動（M11）、文字の浮き上がり（M9）、残り時間の拍動（M12）を止める</td></tr>
+  </table></div>
+</main>
+
+<script type="module">
+  import { CONFIG, COLORS } from './js/config.js';
+  import { UI_VARIANTS, UI_PARTS, UI_CSS, tagParts } from './design/ui-mocks.js';
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const get = (path) => path.split('.').reduce((o, k) => o?.[k], CONFIG);
+
+  const VARIANTS = [
+    { id: 'grid', name: 'マス目（斜めあり）', q: '' },
+    { id: 'grid4', name: 'マス目（斜めなし）', q: 'adj=4' },
+    { id: 'physics', name: '物理', q: 'feel=physics' },
+    { id: 'sample', name: '駒の差し替え（仮の絵）', q: 'skin=sample' },
+  ];
+
+  // [番号, 部品, 補足]。番号の先頭に * を付けたものは canvas 内の描画で、札が付かない
+  const BOARD = [
+    ['B1', '盤面（canvas）', '7×8 のマス目、または箱に積まれた飴 46 個'],
+    ['*B5', 'ロリポップ', 'メンバーカラー 5 色（くるみ・まゆ・まう・あみ・まな）。渦巻き・つや・縁・棒'],
+    ['*B6', 'なぞり線と選択中の飴', 'ツムツム型：選んだ飴を白い縁取りのカプセルでつなぐ。内側はその色の濃い色（まなはピンク）。縁はゆっくり脈打つ'],
+    ['Q1', '救済ボタン', '下を爆発させて混ぜ直す。1 試合 3 回。残りは丸印'],
+    ['B4', '非公式の表記', '画面の一番下、常に表示'],
+  ];
+  const HUD = [
+    ['H1', '残り時間', '最初に 1 回消すまで減らない'],
+    ['H3', '「!」ゲージ', '消すたびに 1 個点灯。7 個でフィーバー。点灯色はメンバーカラー順'],
+    ['H2', 'スコア', ''],
+  ];
+
+  const screensFor = (v) => [
+    {
+      id: 'G1', name: 'タイトル', q: 'pos=title',
+      desc: '盤面の上に白と黒のバンドを重ねる。後ろで飴が落ちてくる。',
+      parts: [['T1', '見出しの上の小さな表記', ''], ['T2', 'ロゴ（!!!!!!! 落ちものパズル）', '「!!!!!!!」はピンク'], ['T5', '説明 1 文', ''],
+        ['T3', 'あそぶ', 'ピンクのボタン'], ['T4', '遊び方', 'W を作るまで押せない'], ['T6', '非公式・運営と無関係の明記', ''], ['T7', 'スキンのクレジット', 'skin.json の credit。飴のときは出ない'], ['T8', '駒の切り替え（飴／メンバー）', '選ぶと後ろの盤面がすぐ変わる。次に開いたときも覚えている。メンバーの絵が無いうちは「準備中」で押せない']],
+    },
+    {
+      id: 'G2', name: 'プレイ開始前', q: 'pos=play',
+      desc: '「あそぶ」直後。なぞるまで時間は止まっている。見本として 3 個をなぞった状態。',
+      parts: [...HUD, ['B2', 'なぞってスタート', '最初に消すと消える。ゆっくり拡大縮小'], ...BOARD],
+    },
+    {
+      id: 'G3', name: 'コンボ中', q: 'pos=combo',
+      desc: '5 回続けて消したところ。4 個をなぞっている。消すと得点が浮き上がる。',
+      parts: [...HUD, ['C', 'コンボ数', '2 以上で表示。増えると弾む'], ['*B7', '得点の浮き上がり', '消した場所に「+1,240」'], ['*B8', 'はじけ', '輪と粒が広がる'], ...BOARD],
+    },
+    {
+      id: 'G4', name: '!!!!!!! フィーバー', q: 'pos=fever',
+      desc: 'フィーバー開始から 2.6 秒後（残り 5.4 秒）。8 秒間、なぞった飴の周りも消え、得点 2 倍。',
+      parts: [['F', 'FEVER の文字', '大きく出て 1.3 秒で消える'], ['F2', 'フィーバーの残り時間', '5 色のバーが縮み、「あと 6」。残り 2 秒で点滅と音'], ['H3', '「!」ゲージ', '残り時間に合わせて右から 1 個ずつ消える'], ['*B9', '背景の 5 色', 'メンバーカラーが流れて脈打つ'], ['H1', '残り時間', ''], ['H2', 'スコア', ''], ['B1', '盤面', '']],
+    },
+    {
+      id: 'G7', name: '救済（爆発の瞬間）', q: 'pos=rescue',
+      desc: 'Q1 を押した 0.15 秒後。下 2 段（物理は底から 2.2）が消えて残りの色が混ざる。得点と「!」は増えず、コンボは維持。',
+      parts: [['Q1', '救済ボタン', '残り 2 回の表示'], ['*B10', '爆発', '床から光と 5 色の粒。盤面が 0.35 秒揺れる（視差効果を減らす設定では揺れない）'], ['H3', '「!」ゲージ', '増えない'], ['B1', '盤面', '']],
+    },
+    {
+      id: 'G5', name: '残り 10 秒', q: 'pos=hurry',
+      desc: '残り時間が赤く拍動し、1 秒ごとに音。下に出ているのは 2 個で離したときのヒント。',
+      parts: [['H1', '残り時間', '10 秒から赤く拍動'], ['B3', 'ヒント（トースト）', '「3 個からつなごう」「まぜました」'], ['H3', '「!」ゲージ', ''], ['H2', 'スコア', ''], ['Q1', '救済ボタン', ''], ['B1', '盤面', '']],
+    },
+    {
+      id: 'G6', name: '結果', q: 'pos=result',
+      desc: '時間切れの 0.9 秒後。共有と導線（R5〜R9）は案の画面を参照。',
+      parts: [['R1', 'ポップなお祭り度', '満点ラインに対する %、段階名'], ['R2', 'スコア・最大コンボ・フィーバー回数・今日の推し色', '推し色は一番多く消した色'],
+        ['R3', 'もう一回', ''], ['R4', 'タイトルへ', '']],
+    },
+  ];
+
+  const partsTable = (parts) => `<table><tr><th>番号</th><th>部品</th><th class="hide-sm">補足</th></tr>${
+    parts.map(([id, name, note]) => {
+      const nolabel = id.startsWith('*');
+      const shown = nolabel ? id.slice(1) : id;
+      return `<tr><td><span class="id${nolabel ? ' nolabel' : ''}" title="${nolabel ? 'canvas 内。札は付きません' : ''}">${shown}</span></td><td>${esc(name)}</td><td class="where hide-sm">${esc(note ?? '')}</td></tr>`;
+    }).join('')}</table>`;
+
+  function render(v) {
+    document.getElementById('screens').innerHTML = screensFor(v).map((s) => {
+      const q = [v.q, s.q].filter(Boolean).join('&');
+      const ids = [...new Set(s.parts.map(([id]) => id).filter((id) => !id.startsWith('*')))].join(',');
+      return `<article class="screen"><div class="frame"><iframe src="index.html?labels=${ids}&${q}" loading="lazy" title="${s.id}"></iframe></div>
+        <div class="meta"><h3><span class="id">${s.id}</span> ${esc(s.name)}<span class="badge">実装済み</span></h3><p>${esc(s.desc)}</p>
+        <p><a href="index.html?${q}" target="_blank" rel="noopener">この状態の実物を開く ↗</a></p>${partsTable(s.parts)}</div></article>`;
+    }).join('');
+    document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.id === v.id)));
+    history.replaceState(null, '', `#${v.id}`);
+  }
+
+  document.getElementById('tabs').innerHTML = VARIANTS.map((v) => `<button role="tab" data-id="${v.id}">${esc(v.name)}</button>`).join('');
+  document.getElementById('tabs').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-id]');
+    if (b) render(VARIANTS.find((v) => v.id === b.dataset.id));
+  });
+  render(VARIANTS.find((v) => `#${v.id}` === location.hash) ?? VARIANTS[0]);
+
+  // ---- UI world-view roughs
+  document.head.append(Object.assign(document.createElement('style'), { textContent: UI_CSS }));
+  const uiTabs = document.getElementById('ui-tabs');
+  uiTabs.innerHTML = UI_VARIANTS.map((v) => `<button role="tab" data-ui="${v.id}">${esc(v.name)}</button>`).join('');
+  function renderUi(v) {
+    document.getElementById('ui-concept').innerHTML = `<b>${esc(v.name)}</b><br>${esc(v.concept)}　救済ボタンの名前：<b>${esc(v.rescueName)}</b>`;
+    const labels = { title: 'タイトル', play: 'プレイ中（フィーバー中）', result: '結果' };
+    document.getElementById('ui-screens').innerHTML = Object.entries(v.screens).map(([key, html]) =>
+      `<figure><div class="frame"><div class="mock ui ui-${v.id}">${html}</div></div><figcaption>${labels[key]}</figcaption></figure>`).join('');
+    uiTabs.querySelectorAll('button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.ui === v.id)));
+    const scale = 0.62;
+    document.fonts.ready.then(() => requestAnimationFrame(() => document.querySelectorAll('#ui-screens .mock').forEach((m) => tagParts(m, scale))));
+  }
+  uiTabs.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ui]');
+    if (b) renderUi(UI_VARIANTS.find((v) => v.id === b.dataset.ui));
+  });
+  renderUi(UI_VARIANTS.find((v) => v.id === new URLSearchParams(location.search).get('ui')) ?? UI_VARIANTS[0]);
+  document.getElementById('ui-parts').innerHTML = `<tr><th>番号</th><th>部品</th><th>補足</th></tr>${
+    UI_PARTS.map(([id, name, note]) => `<tr><td><span class="id">${id}</span></td><td>${esc(name)}</td><td class="where">${esc(note)}</td></tr>`).join('')}`;
+
+  // ---- mocks of screens not built yet
+  const fills = COLORS.map((c) => c.fill);
+  const tag = (id, style) => `<div class="box-l" style="${style}"><span class="t">${id}</span></div>`;
+  const board = (rows, cols, top, cells) => `<div class="m-board" style="top:${top}px;grid-template-columns:repeat(${cols},1fr)">${
+    Array.from({ length: rows * cols }, (_, i) => {
+      const c = cells[i] ?? {};
+      return `<div class="m-candy ${c.cls ?? ''}" style="background:${fills[c.color ?? (i * 7 + 3) % 5]}"></div>`;
+    }).join('')}</div>`;
+
+  const practice = (glow, dimOthers) => {
+    const cells = {};
+    glow.forEach((i) => { cells[i] = { color: 2, cls: 'glow' }; });
+    if (dimOthers) for (let i = 0; i < 20; i++) if (!glow.includes(i)) cells[i] = { ...(cells[i] ?? {}), cls: 'dim' };
+    return board(4, 5, 250, cells);
+  };
+
+  const MOCKS = [
+    {
+      id: 'W1', name: 'オンボーディング 1：なぞる', desc: '初回だけ。小さい練習盤面で同じ色 3 個が光り、指の丸がなぞり方を 2 回見せる。実際に消せたら次へ。',
+      html: `<div class="m-top"><div class="m-steps"><i class="on"></i><i></i><i></i></div><span class="m-skip">スキップ</span></div>
+        ${tag('W1', 'left:12px;top:12px;width:100px;height:30px')}${tag('W2', 'right:12px;top:10px;width:96px;height:42px')}
+        <div class="m-band white" style="top:70px"><h4>同じ色を 3 つなぞろう</h4><p>指を離すと消えるよ</p></div>${tag('W3', 'left:0;right:0;top:70px;height:118px')}
+        ${practice([6, 7, 8], true)}${tag('W4', 'left:8px;right:8px;top:250px;height:300px')}
+        <div class="m-path" style="left:117px;top:369px;width:150px"></div><div class="m-finger" style="left:240px;top:350px"></div>${tag('W5', 'left:226px;top:336px;width:82px;height:82px')}`,
+      parts: [['W1', '進み具合（3 本）', ''], ['W2', 'スキップ', '押すと本番へ。次から出ない'], ['W3', '説明 1 行', '白いバンド'], ['W4', '練習盤面', '5×4、配置は固定'], ['W5', '指の丸', 'なぞり方を見せる。触ると止まる']],
+    },
+    {
+      id: 'W2', name: 'オンボーディング 2：コンボ', desc: 'もう 1 回消すと次へ。消すとコンボ数が出る。',
+      html: `<div class="m-top"><div class="m-steps"><i class="on"></i><i class="on"></i><i></i></div><span class="m-skip">スキップ</span></div>
+        <div class="m-band white" style="top:70px"><h4>続けて消すとコンボ</h4><p>2.5 秒以内に次を消すと得点アップ</p></div>
+        <div style="position:absolute;top:200px;left:0;right:0;text-align:center;font-size:40px;font-weight:900">2 <span style="font-size:16px;letter-spacing:.1em">COMBO</span></div>
+        ${tag('W6', 'left:120px;top:196px;width:150px;height:54px')}${practice([11, 12, 17], false)}`,
+      parts: [['W6', 'コンボ数', '本番の C と同じ'], ['W3', '説明 1 行', '']],
+    },
+    {
+      id: 'W3', name: 'オンボーディング 3：フィーバー', desc: '「!」が一気に 7 個溜まる → フィーバーで 1 回消させる → 「3 分でどこまでいける？」から本番へ。',
+      html: `<div class="m-top"><div class="m-steps"><i class="on"></i><i class="on"></i><i class="on"></i></div><span class="m-skip">スキップ</span></div>
+        <div class="m-band white" style="top:70px"><h4>7 個で !!!!!!! フィーバー</h4><p>まわりも巻き込んで消える</p></div>
+        <div style="position:absolute;top:200px;left:0;right:0"><div class="m-bangs">${'<span>!</span>'.repeat(7)}</div></div>${tag('W7', 'left:95px;top:194px;width:200px;height:56px')}
+        ${practice([7], false)}
+        <div class="m-band" style="bottom:0;background:#1a1113"><div class="m-btn">3 分でどこまでいける？ はじめる</div></div>${tag('W8', 'left:24px;right:24px;bottom:22px;height:56px')}`,
+      parts: [['W7', '「!」ゲージの見本', 'H3 と同じ色順'], ['W8', 'はじめる', 'フィーバーで消した後に出る']],
+    },
+    {
+      id: 'R5', name: '結果：共有と導線', desc: 'G6 の下に続く。カードを画像で保存（端末の共有シート）と X の投稿画面。その下に曲・公演・グループへの導線。',
+      html: `<div class="m-band white" style="top:0;padding-top:30px"><p style="font-size:12px;font-weight:700;color:#71646b">RESULT</p><p style="color:#1d1216;font-weight:700">ポップなお祭り度 <b style="font-size:40px;color:#d6006e">71</b>%</p></div>
+        <div class="m-band" style="top:150px"><div class="m-btn">画像を保存・シェア</div><div class="m-btn ghost">X で投稿</div></div>
+        ${tag('R5', 'left:24px;right:24px;top:172px;height:56px')}${tag('R6', 'left:24px;right:24px;top:236px;height:56px')}
+        <div class="m-band white" style="top:330px;bottom:0"><p style="font-size:12px;font-weight:700;color:#71646b">ろりぽっぷ!!!!!!! をもっと</p></div>
+        <div class="m-band m-links" style="top:380px;background:#fff"><a style="color:#d6006e;border-color:#f2e2ea">曲を聴く <span>Apple Music・Spotify ↗</span></a><a style="color:#d6006e;border-color:#f2e2ea">次の公演 <span>TimeTree ↗</span></a><a style="color:#d6006e;border-color:#f2e2ea">ろりぽっぷ!!!!!!! とは <span>→</span></a></div>
+        ${tag('R7', 'left:24px;right:24px;top:400px;height:50px')}${tag('R8', 'left:24px;right:24px;top:452px;height:50px')}${tag('R9', 'left:24px;right:24px;top:504px;height:50px')}
+        <div class="m-band" style="top:auto;bottom:0;background:#1a1113"><div class="m-btn">もう一回</div><p style="font-size:12px;color:#d9c4ce;margin-top:10px">非公式のファン制作（AIぽっぱー）</p></div>`,
+      parts: [['R5', '画像を保存・シェア', 'スマホは共有シート、PC は PNG を保存'], ['R6', 'X で投稿', '投稿画面を開く。文面とハッシュタグは S6'], ['R7', '曲を聴く', 'Apple Music・Spotify（現名義）'], ['R8', '次の公演', 'TimeTree 公開カレンダー'], ['R9', 'ろりぽっぷ!!!!!!! とは', 'A へ']],
+    },
+    {
+      id: 'S', name: '共有カード（1200×630）', desc: '結果を画像にして X に貼る。飴の装飾はコードで描く。写真・似顔絵は使わない。',
+      html: `<div style="position:absolute;top:60px;left:14px;right:14px;color:#d9c4ce;font-size:13px">X のタイムラインでの見え方（横長 1200×630）</div>
+        <div class="m-card" style="top:90px">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:36%;background:#1a1113;display:grid;grid-template-columns:repeat(3,1fr);align-content:center;padding:6px">${Array.from({ length: 12 }, (_, i) => `<div class="m-candy" style="margin:3px;background:${fills[(i * 3 + 1) % 5]}"></div>`).join('')}</div>
+          <div style="position:absolute;left:40%;top:10px;right:10px">
+            <div style="color:#d6006e;font-weight:900;font-size:20px;line-height:1">!!!!!!!</div><div style="font-weight:700;font-size:13px">落ちものパズル</div>
+            <div style="font-size:10px;font-weight:700;margin-top:6px">ポップなお祭り度</div><div style="font-size:30px;font-weight:900;color:#d6006e;line-height:1">71<span style="font-size:14px;color:#1d1216">%</span></div>
+            <div style="font-size:11px;font-weight:700">お祭りの真ん中</div>
+            <div style="font-size:9px;margin-top:4px;color:#45383e">213,400 点／最大 23 コンボ／推し色 くるみ</div>
+            <div style="font-size:7px;margin-top:3px;color:#71646b">非公式ファン制作 lollpop-puzzle.lolipop-now.app</div>
+          </div>
+        </div>
+        ${tag('S1', 'left:14px;top:90px;width:131px;height:190px')}${tag('S2', 'left:152px;top:96px;width:120px;height:44px')}${tag('S3', 'left:152px;top:146px;width:120px;height:66px')}${tag('S4', 'left:152px;top:216px;width:220px;height:24px')}${tag('S5', 'left:152px;top:242px;width:220px;height:18px')}
+        <div style="position:absolute;top:320px;left:14px;right:14px;padding:14px;background:#2a1a24;font-size:14px;line-height:1.7;color:#fff5f9">
+          <b>投稿文（S6）</b><br>ろりぽっぷ!!!!!!! の落ちものパズルで「ポップなお祭り度 71%」<br>最大 23 コンボ、推し色はくるみ🍭<br>#ろりぽっぷ #落ちものパズル<br>https://lollpop-puzzle.lolipop-now.app/
+        </div>${tag('S6', 'left:14px;top:320px;right:14px;height:150px')}`,
+      parts: [['S1', '飴の装飾', 'その回で多く消した色を多めに'], ['S2', 'ロゴ', ''], ['S3', 'ポップなお祭り度と段階名', ''], ['S4', 'スコア・最大コンボ・推し色', ''], ['S5', '非公式の表記と URL', ''], ['S6', '投稿文', 'ハッシュタグは言葉の一覧の確認後に確定']],
+    },
+    {
+      id: 'A', name: 'ろりぽっぷ!!!!!!! とは', desc: 'R9 から開く 1 画面。事実だけを 1 段落と箇条書きで。出典は lollpop_docs の guide/starter_pack.md。',
+      html: `<div class="m-band white" style="top:0;bottom:0;padding-top:40px">
+          <p style="font-size:12px;font-weight:700;color:#71646b">ABOUT</p>
+          <h4 style="font-size:26px">ろりぽっぷ!!!!!!! とは</h4>
+          <p style="margin-top:12px">東京を拠点に活動する 5 人組のアイドルグループ。コンセプトは「楽しさ無限大」。2024 年 11 月 16 日にデビューしました。</p>
+          <p style="margin-top:14px;font-size:14px"><span style="color:#cc0000">●</span> やぎくるみ　<span style="color:#f5c400">●</span> 夏川茉夢　<span style="color:#7fd4e8">●</span> まう<br><span style="color:#2e9e5b">●</span> 松川愛美　<span style="color:#9c8792">○</span> 愛月まな</p>
+          <div class="m-btn" style="margin-top:22px">公式 X を見る ↗</div>
+          <div class="m-btn ghost" style="color:#d6006e;box-shadow:inset 0 0 0 1.5px #d6006e">公式サイト ↗</div>
+          <div class="m-btn ghost" style="color:#d6006e;box-shadow:inset 0 0 0 1.5px #d6006e">ゲームにもどる</div>
+          <p style="margin-top:18px;font-size:12px;color:#71646b">このゲームは一人のファン（AIぽっぱー）が作った非公式の作品です。ろりぽっぷ!!!!!!! の運営・GMOペパボとは関係ありません。</p>
+        </div>
+        ${tag('A1', 'left:14px;right:14px;top:92px;height:130px')}${tag('A2', 'left:14px;right:14px;top:232px;height:60px')}${tag('A3', 'left:14px;right:14px;top:304px;height:190px')}${tag('A4', 'left:14px;right:14px;top:500px;height:80px')}`,
+      parts: [['A1', '1 段落の紹介', '結成・人数・コンセプト・デビュー'], ['A2', 'メンバーとメンバーカラー', '飴の色と対応'], ['A3', '公式 X・公式サイト・もどる', '外部リンクはピンク'], ['A4', '非公式の明記', '']],
+    },
+  ];
+
+  document.getElementById('mocks').innerHTML = MOCKS.map((m) => `<article class="screen"><div class="frame"><div class="mock">${m.html}</div></div>
+    <div class="meta"><h3><span class="id">${m.id}</span> ${esc(m.name)}<span class="badge plan">案</span></h3><p>${esc(m.desc)}</p>${partsTable(m.parts)}</div></article>`).join('');
+
+  // ---- motion table: [番号, 名前, どんな動きか, config のキー or 説明文]
+  const MOTION = [
+    ['M1', '落下（マス目）', '消えた分だけ上の飴が重力で落ち、空いた所へ上から補充', ['grid.gravity', 'grid.maxFall', 'grid.spawnGap']],
+    ['M2', '着地のぽよん（マス目）', '着地の速さに応じて潰れ、ばねで揺れながら戻る。強く落ちると少し跳ねる', ['grid.squashPerSpeed', 'grid.squashMax', 'grid.squashSpring', 'grid.bounce']],
+    ['M3', '積み重なり（物理）', '丸い飴が転がって積もる。1/120 秒刻みで計算し、端末の fps に左右されない', ['physics.count', 'physics.radius', 'physics.radiusJitter', 'physics.gravity', 'physics.restitution', 'physics.friction', 'physics.iterations']],
+    ['M4', 'ぶつかったときのぽよん（物理）', '飴同士・床にぶつかる速さで潰れて戻る', ['physics.squashPerSpeed', 'physics.squashMax', 'physics.squashSpring']],
+    ['M5', 'つながりの判定', 'マス目は隣（8 方向 or 4 方向）、物理は中心間の距離が半径の和 × 係数以内', ['grid.adjacency', 'physics.linkFactor', 'game.minChain']],
+    ['M6', 'なぞりの当たり判定', 'なぞり始めは広め、伸ばすときは狭め（斜めに動かして横の飴を拾わない）。速い指も 0.15 マス刻みで補間', ['input.pickRadius', 'input.linkRadius', 'input.sampleStep']],
+    ['M7', '選んだ飴', '拡大して光る。ひとつ前の飴に戻すと取り消し', ['render.selectedScale']],
+    ['M8', 'はじけ', '輪と 6 粒が広がって消える', ['render.popDuration']],
+    ['M9', '得点と言葉', '消した場所に得点、上に言葉（曲名・公式・X の言葉）が浮き上がる', ['render.wordDuration']],
+    ['M10', 'コンボ', '前に消してから猶予以内に消すと +1。1 つごとに倍率 +0.1、上限あり', ['combo.window', 'score.comboStep', 'score.comboCap']],
+    ['M11', '!!!!!!! フィーバー', '「!」7 個で開始。周りも巻き込んで消え、得点 2 倍。背景が 5 色で脈打つ', ['fever.bangsToFever', 'fever.duration', 'fever.blastCells', 'fever.blastFactor', 'score.feverMultiplier']],
+    ['M12', '残り時間の急かし', '残り秒数で時間が赤く拍動し、1 秒ごとに音', ['game.hurryAt']],
+    ['M13', '時間の開始', '最初に 1 回消すまで時間を減らさない', ['game.duration', 'game.startTimerOnFirstClear']],
+    ['M14', '得点', '1 個あたりの点＋長くつないだボーナス（3 個を超えた数の 2 乗）', ['score.perPiece', 'score.longBonus']],
+    ['M15', 'ポップなお祭り度', '満点ラインに対する %。段階名は仮', ['result.fullScore', 'result.tiers']],
+    ['M16', '効果音', 'なぞるたびに音程が上がる／消すとポン（コンボで高く）／フィーバーの 5 音／秒読み／終了の 2 音。すべて合成', ['sound.volume']],
+    ['M17', '振動', 'なぞる 8ms／消す 18〜30ms／フィーバーは連続。Android のみ（iOS は未対応、仕上げで検討）', 'js/feedback.js'],
+    ['M18', 'FEVER の文字・コンボの弾み', '大きく出て縮む（1.3 秒）／数字が 1.5 倍から戻る', 'css/game.css'],
+    ['M19', '救済（爆発して混ぜ直す）', '1 試合 3 回。下を消して補充し、全体の色を混ぜ直す。得点・「!」なし、コンボは維持して猶予を数え直す。爆発の光と粒・揺れ・「ドン」と振動', ['rescue.count', 'rescue.gridRows', 'rescue.physicsDepth', 'rescue.shake', 'render.boomDuration']],
+    ['M20', 'フィーバーの残り時間', 'バーが縮み、秒数を表示。残り秒数以下で点滅と 1 秒ごとの音。終わると「FEVER おわり」', ['fever.duration', 'fever.warnAt']],
+    ['M22', '駒の見た目（スキン）', '?skin=candy|members|sample。画像の駒は 1 マスに対してこの半径で描く。画像が無い駒は飴に戻る（assets/skins/README.md）', ['skin.default', 'render.artRadius', 'render.candyRadius']],
+    ['M21', 'なぞり線（アウトライン）', '白い縁の太さ・内側の帯の太さ・脈打つ幅', ['render.traceOutline', 'render.traceInset', 'render.traceOutlinePulse', 'render.selectedScale']],
+  ];
+  document.getElementById('motion').innerHTML = `<tr><th>番号</th><th>名前</th><th class="hide-sm">どんな動きか</th><th>config のキーと今の値</th></tr>${
+    MOTION.map(([id, name, what, keys]) => `<tr><td><span class="id">${id}</span></td><td>${esc(name)}</td><td class="hide-sm">${esc(what)}</td>
+      <td class="value">${Array.isArray(keys) ? keys.map((k) => `<code>${k} = ${esc(JSON.stringify(get(k)))}</code>`).join('<br>') : esc(keys)}</td></tr>`).join('')}`;
+</script>
+</body>
+</html>

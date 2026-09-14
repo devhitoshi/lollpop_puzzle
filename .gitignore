@@ -1,0 +1,15 @@
+node_modules/
+.wrangler/
+.lolipop/
+.DS_Store
+Thumbs.db
+
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+
+# Gemini の生成画像（元データ）と確認用の一覧
+raw/
+sheet.png
+__pycache__/

@@ -1,0 +1,12 @@
+{
+  "title": "差し替えテスト用（仮の絵）",
+  "stick": false,
+  "credit": "差し替えテスト用の仮の絵",
+  "pieces": [
+    { "key": "kurumi", "name": "くるみ", "image": "kurumi.png", "happy": "kurumi_happy.png" },
+    { "key": "mayu", "name": "まゆ", "image": "mayu.png" },
+    { "key": "mau", "name": "まう", "image": "mau.png" },
+    { "key": "ami", "name": "あみ", "image": "ami.png" },
+    { "key": "mana", "name": "まな", "image": "mana.png" }
+  ]
+}

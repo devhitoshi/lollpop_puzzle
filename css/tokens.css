@@ -1,0 +1,32 @@
+/* Design tokens, copied from lollpop_docs/design.md (the source of truth — edit there first).
+   Only the tokens this game uses. Member colors are decoration only, never for buttons. */
+:root {
+  --primary: #d6006e;
+  --primary-active: #b0005b;
+  --primary-on-dark: #ff9ecb;
+  --ink: #1d1216;
+  --body: #45383e;
+  --muted: #71646b;
+  --hairline: #f2e2ea;
+  --canvas: #ffffff;
+  --surface-blush: #fbe7f0;
+  --surface-dark: #1a1113;
+  --surface-dark-elevated: #2a1a24;
+  --on-primary: #ffffff;
+  --on-dark: #fff5f9;
+  --on-dark-soft: #d9c4ce;
+
+  --mc-kurumi: #cc0000;
+  --mc-mayu: #f5c400;
+  --mc-mau: #7fd4e8;
+  --mc-ami: #2e9e5b;
+  --mc-mana: #ffffff;
+
+  --font: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic Medium", Meiryo, sans-serif;
+  --rounded-md: 8px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+}

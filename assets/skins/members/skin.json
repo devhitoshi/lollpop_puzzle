@@ -1,0 +1,12 @@
+{
+  "title": "メンバー",
+  "stick": false,
+  "credit": "イラストは公式写真をもとに AI（Gemini）で作成。©FLAP entertainment、許諾を得て掲載",
+  "pieces": [
+    { "key": "kurumi", "name": "くるみ", "image": "kurumi.png", "happy": "kurumi_happy.png" },
+    { "key": "mayu", "name": "まゆ", "image": "mayu.png", "happy": "mayu_happy.png" },
+    { "key": "mau", "name": "まう", "image": "mau.png", "happy": "mau_happy.png" },
+    { "key": "ami", "name": "あみ", "image": "ami.png", "happy": "ami_happy.png" },
+    { "key": "mana", "name": "まな", "image": "mana.png", "happy": "mana_happy.png" }
+  ]
+}

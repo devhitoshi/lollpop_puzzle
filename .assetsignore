@@ -1,0 +1,15 @@
+# Files excluded from Cloudflare static asset uploads. Same syntax as .gitignore.
+# Pages skips .git automatically, but Workers Static Assets does not — keep this file.
+.git
+.gitignore
+.assetsignore
+.wrangler
+.lolipop
+node_modules
+README.md
+wrangler.jsonc
+tests
+requirements.md
+package.json
+docs
+scripts
