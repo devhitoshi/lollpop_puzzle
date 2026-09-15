@@ -9,29 +9,25 @@
 
 ## いまの作業（2026-09-15 昼、ここから再開）
 
-- **ブランチ** `feature/ui-stylish-endless-fx`。コミット f6733f0（E+・1 分／エンドレス・スター飴・演出）の上に、**未コミットの変更が 46 ファイル**ある。push はしていない（main は 0d467f7 のまま）
-- **未コミットの中身**
+- **ブランチ** `feature/ui-stylish-endless-fx`。コミット f6733f0（E+・1 分／エンドレス・スター飴・演出）の上に 158335d（メンバー駒・既定をメンバーに）をコミット済み。push はしていない（main は 0d467f7 のまま）
+- **158335d の中身**
   - メンバー駒の表情 5 種類（通常・笑顔・はじけ顔・フィーバー顔・結果のポーズ）の仕組み：`js/skin.js`（`pop` `fever` `pose`）、`js/render.js`（フィーバー中はフィーバー顔、消えた駒は 0.14 秒はじけ顔で膨らむ）、結果画面の R11（推し色メンバーのポーズ）、`?pos=pop`
   - `scripts/prepare_piece.py`：`--grid` はキャラクターを塊で見つけて切り出す（生成画像は均等なマスになっていないため）、`--rows`（段の名前）、`--members`（1 人だけ作り直すとき）
   - `scripts/make_sample_faces.py` と `assets/skins/sample/kurumi_{pop,fever,pose}.png`（表示確認用の仮の絵）
   - `scripts/cdp-probe.mjs` の `--eval=` と `--shot=`（実時間の確認と撮影）
   - **メンバー駒の本物の絵 25 枚** `assets/skins/members/*.png`（Antigravity で生成 → 切り分け済み）。元画像は `raw/members_faces.png`（1200×896、5×4）と `raw/members_pose.png`（1376×384、5×1）。`raw/` と `sheet*.png` は git の対象外
   - `docs/member_pieces_gemini.md`（一括プロンプト、1 人だけ作り直す節、Antigravity への依頼文）
-- **まな（白）を作り直し中**
+- **まな（白）の作り直しは完了**
   - 問題：輪郭が薄い灰色で、淡いピンクの盤面の上で見えにくい。原因は一括プロンプトの「white with a light gray outline」（修正済み）
   - 2026-09-15 昼に `agy -p`（Antigravity CLI のヘッドレス実行）で作り直した。依頼文は `C:\Users\kawad\work\sandbox\lollpop_puzzle_eplus\agy_mana_prompt.txt`、agy の報告は同じフォルダの `agy_mana_out.txt`
   - **4 表情は済み**：`raw/mana_faces.png`（768×1376、agy が `~/.gemini/antigravity-cli/brain/…/mana_faces_*.jpg` に置いたものを PNG にした）→ 切り分けて `assets/skins/members/mana{,_happy,_pop,_fever}.png` を差し替え。輪郭は他の 4 人と同じ濃い茶色になり、盤面でも見える（撮影で確認）。旧いまなの絵は `sandbox/lollpop_puzzle_eplus/mana_old/`
     - 気になる点：フィーバー顔が星の目ではなく「><」の目になった。オーナーに見せて、気になるなら作り直す
-  - **ポーズは画像処理で仮に直した（2026-09-15 昼）**：生成が上限（429）で止まったため、オーナーの「今の素材で一旦作って」で、旧い絵を `sandbox/lollpop_puzzle_eplus/pose_try/darken_pose.py` で加工（灰色の線→濃い茶色、輪郭の外のもやを切る、外側に 2px の線を足す、灰色の服を白に寄せる）して `mana_pose.png` を差し替えた。結果画面で他の 4 人と同じ濃さに見えることを撮影で確認（`pose_try/result_cmp.png`）。旧い絵は `mana_old/`。**オーナー：「一旦それで」（2026-09-15）→ 加工版で確定、生成し直しはしない**
+  - **ポーズは生成し直した（2026-09-15 14:12）**：上限解除後に `agy --output-format json -p`（依頼文 `sandbox/lollpop_puzzle_eplus/agy_mana_pose_prompt.txt`、会話 ID bf3543ff-e675-4da2-b5b9-20e785e999b2）で 1024×1024 を生成 → `raw/mana_pose.png` → `prepare_piece.py --grid 1x1 --members mana --rows pose` で切り分けて差し替え。オーナーが加工版と比べて生成版を選んだ（線がくっきり、服は薄い灰色）
+    - それまでの加工版（旧い絵を `pose_try/darken_pose.py` で輪郭を濃くしたもの）は `sandbox/lollpop_puzzle_eplus/pose_try/mana_pose_processed_deployed.png`、旧い薄い絵は `mana_old/`
   - まなの 3 表情の上端に上の段の靴の切れ端が残っていた → `prepare_piece.py` の `keep_main_blob` で、切り出し範囲の端に触れる小片を捨てるように直し、切り直した
-  - **生成し直す場合の手順**（オーナーが加工版で不満なときだけ。依頼文は `sandbox/lollpop_puzzle_eplus/agy_mana_pose_prompt.txt`）
-    1. 14:00 以降に、`docs/member_pieces_gemini.md` の「1 人だけ作り直す」節のポーズのプロンプトで `agy -p` を実行する（`raw/members_pose.png` を添付、1:1。画像の生成だけさせる）
-    2. agy は画像を `~/.gemini/antigravity-cli/brain/<会話 ID>/` に jpg で置くので、それを `raw/mana_pose.png` に PNG で保存する
-    3. `python scripts/prepare_piece.py raw/mana_pose.png --grid 1x1 --members mana --rows pose --out assets/skins/members`
-    4. `node scripts/cdp-probe.mjs "http://127.0.0.1:8791/index.html?pos=result&skin=members" 3500 --shot=<png>` などで、結果画面のポーズを見る（まなが推し色になる状態は、`pos=result` の `cleared` を書き換えるか、実際に遊んで出す）
 - **そのあと**
   - `CONFIG.skin.default` を `members` にした（2026-09-15 オーナー指示）。端末に選択が保存されていない人はメンバーの駒で始まる。タイトルの説明文は「同じ色のロリポップを…」のまま（直すかはオーナー次第）
-  - コミット（指示があれば）→ Cloudflare プレビューに公開
+  - **コミット 158335d → Cloudflare プレビューに公開済み**（2026-09-15、オーナー指示。Version 93703fa7）。公開前に `.assetsignore` へ `raw` `sheet*.png` を足した（参照写真を公開しないため）。公開後に `/.git/HEAD` `/raw/…` `/sheet.png` が 404、既定がメンバーの駒になることを確認。**push はまだ**
   - push したら claude-work に判断待ちの Issue を立てる（未 push のうちはリンクが切れるので保留していた）
 - **この作業分の確認は済んだ**（2026-09-15）：参照写真は公式アー写、絵柄とフィーバー顔はこのまま、BGM は合成のオリジナル曲（下の「決定事項」）。結果画面のポーズが少し甘い件は「一旦それで」
 - **次**：BGM（Web Audio の合成曲）の実装、またはオンボーディング W／A キャンディポップ。どれからにするかオーナーに聞く
