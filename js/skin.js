@@ -3,12 +3,16 @@
 //   assets/skins/<name>/skin.json   manifest (see assets/skins/README.md)
 //   assets/skins/<name>/*.png       optional piece art, 512 × 512, transparent
 //
+// Faces per piece (all optional): image (normal), happy (being traced), pop (the instant it bursts),
+// fever (during fever), pose (the result screen). Missing faces fall back: pop → happy → image, fever → image.
+//
 // A piece without art (or whose art fails to load) falls back to the drawn candy, so a half-finished
 // skin is still playable. Images must be same-origin: cross-origin art would taint the canvas and
 // break exporting the share card.
 
 const NAME_RE = /^[a-z0-9_-]+$/;
 const FILE_RE = /^[A-Za-z0-9_-]+\.(png|webp)$/;
+export const FACES = ['image', 'happy', 'pop', 'fever', 'pose'];
 
 export function validateSkin(json, colors) {
   const errors = [];
@@ -19,7 +23,7 @@ export function validateSkin(json, colors) {
     const p = pieces[i];
     if (!p) return;
     if (p.key !== c.key) errors.push(`pieces[${i}].key は "${c.key}" の順番です（"${p.key}"）`);
-    for (const field of ['image', 'happy']) {
+    for (const field of FACES) {
       const v = p[field];
       if (v == null) continue;
       if (typeof v !== 'string' || !FILE_RE.test(v)) {
@@ -58,7 +62,7 @@ export function candySkin(colors) {
     title: '飴',
     stick: true,
     credit: '',
-    pieces: colors.map((c) => ({ key: c.key, image: null, happy: null })),
+    pieces: colors.map((c) => ({ key: c.key, ...Object.fromEntries(FACES.map((f) => [f, null])) })),
     missing: [],
   };
 }
@@ -89,11 +93,10 @@ export async function loadSkin(name, { colors, base = 'assets/skins', loadImage 
       return null;
     }
   };
-  const pieces = await Promise.all(json.pieces.map(async (p) => ({
-    key: p.key,
-    image: await load(p.key, p.image),
-    happy: await load(p.key, p.happy),
-  })));
+  const pieces = await Promise.all(json.pieces.map(async (p) => {
+    const faces = await Promise.all(FACES.map((f) => load(p.key, p[f])));
+    return { key: p.key, ...Object.fromEntries(FACES.map((f, i) => [f, faces[i]])) };
+  }));
   if (missing.length) console.warn(`[skin] ${name}: 読めなかった画像（その駒は飴になります）: ${missing.join(', ')}`);
 
   return {

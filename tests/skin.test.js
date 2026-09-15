@@ -67,3 +67,26 @@ test('probeSkin: candy always, others only when the first image exists', async (
   assert.equal(await probeSkin('members', { colors: COLORS, fetchJson: fakeJson({ pieces: pieces() }), exists: async () => true }), false);
   assert.equal(await probeSkin('members', { colors: COLORS, fetchJson: async () => { throw new Error('404'); } }), false);
 });
+
+test('validateSkin accepts the pop / fever / pose faces and checks their file names', () => {
+  const ok = validateSkin({ pieces: pieces((c) => ({ image: `${c.key}.png`, pop: `${c.key}_pop.png`, fever: `${c.key}_fever.png`, pose: `${c.key}_pose.png` })) }, COLORS);
+  assert.deepEqual(ok, { ok: true, errors: [] });
+  for (const field of ['pop', 'fever', 'pose']) {
+    const bad = validateSkin({ pieces: pieces((c, i) => (i === 1 ? { [field]: '../x.png' } : {})) }, COLORS);
+    assert.equal(bad.ok, false, field);
+  }
+});
+
+test('loadSkin loads every face and falls back per face', async () => {
+  const json = { pieces: pieces((c) => ({ image: `${c.key}.png`, happy: `${c.key}_happy.png`, pop: `${c.key}_pop.png`, fever: `${c.key}_fever.png`, pose: `${c.key}_pose.png` })) };
+  const skin = await loadSkin('members', {
+    colors: COLORS,
+    fetchJson: fakeJson(json),
+    loadImage: fakeImages((url) => !url.endsWith('mayu_fever.png')),
+  });
+  assert.equal(skin.pieces[0].pop.url, 'assets/skins/members/kurumi_pop.png');
+  assert.equal(skin.pieces[0].pose.url, 'assets/skins/members/kurumi_pose.png');
+  assert.equal(skin.pieces[1].fever, null);
+  assert.equal(skin.pieces[1].image.url, 'assets/skins/members/mayu.png');
+  assert.deepEqual(skin.missing, ['mayu:mayu_fever.png']);
+});

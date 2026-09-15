@@ -13,3 +13,7 @@ requirements.md
 package.json
 docs
 scripts
+# Generated source images and reference photos (git-ignored too) — never publish
+raw
+sheet*.png
+__pycache__

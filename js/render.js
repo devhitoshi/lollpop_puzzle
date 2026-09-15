@@ -27,7 +27,7 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
   let ox = 0;
   let oy = 0;
   let field = null;
-  let sprites = []; // per color: { normal, happy, radius (field units for a 0.5-radius piece), stick }
+  let sprites = []; // per color: { normal, happy, pop, fever, radius (field units for a 0.5-radius piece), stick }
   let starSprite = null; // the star candy (made by long chains), same shape for every skin
   const STAR_COLOR = '#ff4f9a';
   let skin = null;
@@ -63,11 +63,17 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
       const art = skin?.pieces[i];
       if (art?.image) {
         const px = R.artRadius * scale * dpr;
-        return { normal: drawArt(art.image, px), happy: art.happy ? drawArt(art.happy, px) : null, radius: R.artRadius, stick: skin.stick };
+        const face = (img) => (img ? drawArt(img, px) : null);
+        const normal = drawArt(art.image, px);
+        const happy = face(art.happy);
+        // Missing faces fall back so every piece always has something to show
+        return { normal, happy, pop: face(art.pop) ?? happy ?? normal, fever: face(art.fever) ?? normal, radius: R.artRadius, stick: skin.stick };
       }
-      return { normal: drawCandy(c, R.candyRadius * scale * dpr), happy: null, radius: R.candyRadius, stick: true };
+      const candy = drawCandy(c, R.candyRadius * scale * dpr);
+      return { normal: candy, happy: null, pop: candy, fever: candy, radius: R.candyRadius, stick: true };
     });
-    starSprite = { normal: drawStar(R.starRadius * scale * dpr), happy: null, radius: R.starRadius, stick: false };
+    const star = drawStar(R.starRadius * scale * dpr);
+    starSprite = { normal: star, happy: null, pop: star, fever: star, radius: R.starRadius, stick: false };
   }
 
   // Star candy: a glowing pink star with a white rim and a "!" — reads as "tap me" on any skin
@@ -289,13 +295,14 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
     }
   }
 
-  function drawCandies(pieces, selected, t) {
+  function drawCandies(pieces, selected, t, feverLevel) {
+    const inFever = feverLevel > 0.5;
     for (const p of pieces) {
       const isSel = selected.has(p);
       const pulse = p.special && !reducedMotion ? 1 + 0.07 * Math.sin(t * 5 + p.id) : 1;
       const { sx, sy, bx, by } = pieceTransform(p, (isSel ? R.selectedScale : 1) * pulse);
       const sprite = spriteOf(p);
-      const img = isSel && sprite.happy ? sprite.happy : sprite.normal;
+      const img = isSel ? sprite.happy ?? sprite.normal : inFever ? sprite.fever : sprite.normal;
       const k = p.r / 0.5;
       ctx.setTransform(sx * k, 0, 0, sy * k, bx, by);
       const half = img.width / 2;
@@ -341,7 +348,19 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
         effects.splice(i, 1);
         continue;
       }
-      if (e.kind === 'pop') {
+      if (e.kind === 'ghost') {
+        // The cleared candy, swelling with its pop face for a moment before the confetti takes over
+        const sprite = e.special ? starSprite : sprites[e.color];
+        if (sprite) {
+          const grow = reducedMotion ? 1 : 1 + (R.popGhostScale - 1) * (1 - (1 - k) ** 2);
+          const s = (e.r / 0.5) * grow;
+          ctx.globalAlpha = k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4;
+          ctx.setTransform(s, 0, 0, s, X(e.x), Y(e.y));
+          const img = sprite.pop;
+          ctx.drawImage(img, -img.width / 2, -img.height / 2);
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+      } else if (e.kind === 'pop') {
         const r = (e.r + k * 0.45) * scale * dpr;
         ctx.globalAlpha = 1 - k;
         ctx.strokeStyle = e.color;
@@ -508,6 +527,7 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
 
     pop(pieces) {
       for (const p of pieces) {
+        effects.push({ kind: 'ghost', x: p.x, y: p.y, r: p.r, color: p.color, special: !!p.special, t: 0, life: R.popGhost * (reducedMotion ? 0.6 : 1) });
         effects.push({ kind: 'pop', x: p.x, y: p.y, r: candyR(p), color: p.special ? STAR_COLOR : effectColor(colors[p.color]), t: 0, life: R.popDuration, seed: Math.random() * TAU });
       }
     },
@@ -534,7 +554,7 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
       ctx.clip();
       drawSticks(field.pieces, selected);
       drawTraceBand(trace, t);
-      drawCandies(field.pieces, selected, t);
+      drawCandies(field.pieces, selected, t, feverLevel);
       ctx.restore();
       drawEffects(dt);
       emitAmbient(dt, feverLevel, bonus);

@@ -3,10 +3,10 @@
   "stick": false,
   "credit": "イラストは公式写真をもとに AI（Gemini）で作成。©FLAP entertainment、許諾を得て掲載",
   "pieces": [
-    { "key": "kurumi", "name": "くるみ", "image": "kurumi.png", "happy": "kurumi_happy.png" },
-    { "key": "mayu", "name": "まゆ", "image": "mayu.png", "happy": "mayu_happy.png" },
-    { "key": "mau", "name": "まう", "image": "mau.png", "happy": "mau_happy.png" },
-    { "key": "ami", "name": "あみ", "image": "ami.png", "happy": "ami_happy.png" },
-    { "key": "mana", "name": "まな", "image": "mana.png", "happy": "mana_happy.png" }
+    { "key": "kurumi", "name": "くるみ", "image": "kurumi.png", "happy": "kurumi_happy.png", "pop": "kurumi_pop.png", "fever": "kurumi_fever.png", "pose": "kurumi_pose.png" },
+    { "key": "mayu", "name": "まゆ", "image": "mayu.png", "happy": "mayu_happy.png", "pop": "mayu_pop.png", "fever": "mayu_fever.png", "pose": "mayu_pose.png" },
+    { "key": "mau", "name": "まう", "image": "mau.png", "happy": "mau_happy.png", "pop": "mau_pop.png", "fever": "mau_fever.png", "pose": "mau_pose.png" },
+    { "key": "ami", "name": "あみ", "image": "ami.png", "happy": "ami_happy.png", "pop": "ami_pop.png", "fever": "ami_fever.png", "pose": "ami_pose.png" },
+    { "key": "mana", "name": "まな", "image": "mana.png", "happy": "mana_happy.png", "pop": "mana_pop.png", "fever": "mana_fever.png", "pose": "mana_pose.png" }
   ]
 }

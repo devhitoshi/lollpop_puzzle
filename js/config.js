@@ -106,7 +106,7 @@ export const CONFIG = {
 
   // Piece look. ?skin= overrides. See assets/skins/README.md
   skin: {
-    default: 'candy', // used when the player hasn't chosen yet
+    default: 'members', // used when the player hasn't chosen yet
     // Shown on the title screen (T8). ?skin= still accepts any folder name for testing.
     choices: [
       { name: 'candy', label: '飴' },
@@ -139,6 +139,8 @@ export const CONFIG = {
     traceOutlinePulse: 0.02,
     boomDuration: 0.9,
     popDuration: 0.32,
+    popGhost: 0.14, // a cleared candy lingers this long with its pop face, swelling before it bursts
+    popGhostScale: 1.35,
     wordDuration: 1.1,
   },
 

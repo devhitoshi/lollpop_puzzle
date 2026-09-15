@@ -1,4 +1,4 @@
-# 引き継ぎメモ（2026-09-14 夕方時点）
+# 引き継ぎメモ（2026-09-15 昼時点）
 
 新しいセッションはこのファイルから始める。**書いてあることを鵜呑みにせず、`git log` と実物で裏取りしてから進める。**
 
@@ -6,6 +6,35 @@
 - 要件：[`requirements.md`](../requirements.md)（UI の節は古い。下の「決定事項」が新しい）
 - 設計書：[`design.html`](../design.html)（公開先 `/design`）。オーナーは部品番号で修正を指示する
 - 流れの正：スキル `app-spec-flow`（要件 → 設計書 → 実装 → 番号で修正 → 公開）
+
+## いまの作業（2026-09-15 昼、ここから再開）
+
+- **ブランチ** `feature/ui-stylish-endless-fx`。コミット f6733f0（E+・1 分／エンドレス・スター飴・演出）の上に、**未コミットの変更が 46 ファイル**ある。push はしていない（main は 0d467f7 のまま）
+- **未コミットの中身**
+  - メンバー駒の表情 5 種類（通常・笑顔・はじけ顔・フィーバー顔・結果のポーズ）の仕組み：`js/skin.js`（`pop` `fever` `pose`）、`js/render.js`（フィーバー中はフィーバー顔、消えた駒は 0.14 秒はじけ顔で膨らむ）、結果画面の R11（推し色メンバーのポーズ）、`?pos=pop`
+  - `scripts/prepare_piece.py`：`--grid` はキャラクターを塊で見つけて切り出す（生成画像は均等なマスになっていないため）、`--rows`（段の名前）、`--members`（1 人だけ作り直すとき）
+  - `scripts/make_sample_faces.py` と `assets/skins/sample/kurumi_{pop,fever,pose}.png`（表示確認用の仮の絵）
+  - `scripts/cdp-probe.mjs` の `--eval=` と `--shot=`（実時間の確認と撮影）
+  - **メンバー駒の本物の絵 25 枚** `assets/skins/members/*.png`（Antigravity で生成 → 切り分け済み）。元画像は `raw/members_faces.png`（1200×896、5×4）と `raw/members_pose.png`（1376×384、5×1）。`raw/` と `sheet*.png` は git の対象外
+  - `docs/member_pieces_gemini.md`（一括プロンプト、1 人だけ作り直す節、Antigravity への依頼文）
+- **まな（白）を作り直し中**
+  - 問題：輪郭が薄い灰色で、淡いピンクの盤面の上で見えにくい。原因は一括プロンプトの「white with a light gray outline」（修正済み）
+  - 2026-09-15 昼に `agy -p`（Antigravity CLI のヘッドレス実行）で作り直した。依頼文は `C:\Users\kawad\work\sandbox\lollpop_puzzle_eplus\agy_mana_prompt.txt`、agy の報告は同じフォルダの `agy_mana_out.txt`
+  - **4 表情は済み**：`raw/mana_faces.png`（768×1376、agy が `~/.gemini/antigravity-cli/brain/…/mana_faces_*.jpg` に置いたものを PNG にした）→ 切り分けて `assets/skins/members/mana{,_happy,_pop,_fever}.png` を差し替え。輪郭は他の 4 人と同じ濃い茶色になり、盤面でも見える（撮影で確認）。旧いまなの絵は `sandbox/lollpop_puzzle_eplus/mana_old/`
+    - 気になる点：フィーバー顔が星の目ではなく「><」の目になった。オーナーに見せて、気になるなら作り直す
+  - **ポーズは画像処理で仮に直した（2026-09-15 昼）**：生成が上限（429）で止まったため、オーナーの「今の素材で一旦作って」で、旧い絵を `sandbox/lollpop_puzzle_eplus/pose_try/darken_pose.py` で加工（灰色の線→濃い茶色、輪郭の外のもやを切る、外側に 2px の線を足す、灰色の服を白に寄せる）して `mana_pose.png` を差し替えた。結果画面で他の 4 人と同じ濃さに見えることを撮影で確認（`pose_try/result_cmp.png`）。旧い絵は `mana_old/`。**オーナー：「一旦それで」（2026-09-15）→ 加工版で確定、生成し直しはしない**
+  - まなの 3 表情の上端に上の段の靴の切れ端が残っていた → `prepare_piece.py` の `keep_main_blob` で、切り出し範囲の端に触れる小片を捨てるように直し、切り直した
+  - **生成し直す場合の手順**（オーナーが加工版で不満なときだけ。依頼文は `sandbox/lollpop_puzzle_eplus/agy_mana_pose_prompt.txt`）
+    1. 14:00 以降に、`docs/member_pieces_gemini.md` の「1 人だけ作り直す」節のポーズのプロンプトで `agy -p` を実行する（`raw/members_pose.png` を添付、1:1。画像の生成だけさせる）
+    2. agy は画像を `~/.gemini/antigravity-cli/brain/<会話 ID>/` に jpg で置くので、それを `raw/mana_pose.png` に PNG で保存する
+    3. `python scripts/prepare_piece.py raw/mana_pose.png --grid 1x1 --members mana --rows pose --out assets/skins/members`
+    4. `node scripts/cdp-probe.mjs "http://127.0.0.1:8791/index.html?pos=result&skin=members" 3500 --shot=<png>` などで、結果画面のポーズを見る（まなが推し色になる状態は、`pos=result` の `cleared` を書き換えるか、実際に遊んで出す）
+- **そのあと**
+  - `CONFIG.skin.default` を `members` にした（2026-09-15 オーナー指示）。端末に選択が保存されていない人はメンバーの駒で始まる。タイトルの説明文は「同じ色のロリポップを…」のまま（直すかはオーナー次第）
+  - コミット（指示があれば）→ Cloudflare プレビューに公開
+  - push したら claude-work に判断待ちの Issue を立てる（未 push のうちはリンクが切れるので保留していた）
+- **この作業分の確認は済んだ**（2026-09-15）：参照写真は公式アー写、絵柄とフィーバー顔はこのまま、BGM は合成のオリジナル曲（下の「決定事項」）。結果画面のポーズが少し甘い件は「一旦それで」
+- **次**：BGM（Web Audio の合成曲）の実装、またはオンボーディング W／A キャンディポップ。どれからにするかオーナーに聞く
 
 ## 目的と締切
 
@@ -43,6 +72,9 @@
 | 駒の見た目 | スキンで切り替え（飴／メンバー）。プレイヤーがタイトル画面の T8 で選べる。メンバーの絵が無いうちは「準備中」 |
 | メンバーの絵 | Gemini で公式写真からデフォルメを作る。**オーナーが運営に AI 作画の許諾を確認済み**（2026-09-14 申告）。プロンプトは [`member_pieces_gemini.md`](member_pieces_gemini.md) |
 | UI | `lollpop_docs/design.md` には従わない。**A キャンディポップ と E+ かわいいスタイリッシュ の 2 テーマ**をタイトル画面の T9 で切り替える。**E+ から実装**（実装済み）、A は次。E+ の色はラフのままで OK が出た |
+| メンバー駒の絵柄 | **このまま**（2026-09-15）。髪はメンバーカラー、足のある 2 頭身。フィーバー顔の目がそろっていない（星の目はくるみ・まゆだけ、まなは「><」）のも**このまま** |
+| 参照写真の出典 | `lollpop_docs/work/game_assets/ref/members*.jpg` は**公式アー写**（2026-09-15 オーナー回答） |
+| BGM | **合成のオリジナル曲**（Web Audio でコードから鳴らす）に決定（2026-09-15）。requirements.md の「やらないこと」から外す |
 | リポジトリ | `devhitoshi/lollpop_puzzle`（公開） |
 
 ## 今の状態
@@ -61,6 +93,7 @@
 - **E+ の画面**：タイトル（T1〜T9。盤面は斜めの窓から見える）、HUD（H）、盤面の四隅の括弧、コンボ（C）、フィーバー（F・F2「05.4」）、救済（Q1 ぽっぷボム）、結果（R1 ランク・%、R2 数値とバー、R3・R4）
 - 設計書：実物 G1〜G7（物理×E+）、未実装のモック（W・R5〜R9・S・A。まだ旧い暗い見た目）、UI ラフ（A・E+ ほか）、M1〜M23
 - 振動：`CONFIG.vibration`（Android）、`js/haptics.js`（iPhone のボタン）、タイトルの T10
+- メンバー駒の表情：通常・笑顔・はじけ顔・フィーバー顔・結果のポーズの 5 種類（`skin.json` の `image` `happy` `pop` `fever` `pose`）。現在 Gemini による画像生成・切り分け作業を着手中（手順：`member_pieces_gemini.md`、スクリプト：`prepare_piece.py`）。
 - 演出：`CONFIG.fx`（粒・跳ね・揺れ・光の強さ）、`js/particles.js`（粒プール。盤面と結果画面の紙吹雪で共用）、`field.kick`（飴を弾ませる）。設計書 M27〜M32
 - 調整用：`node scripts/balance.mjs`（bot で試合を回して得点・フィーバー回数・エンドレスの続く時間を出す）、`node scripts/cdp-probe.mjs <URL> <待つms>`（実時間で開いて状態と実行時エラーを取る）
 - テスト：`node --test` 31 件

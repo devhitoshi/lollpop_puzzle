@@ -11,5 +11,5 @@ Thumbs.db
 
 # Gemini の生成画像（元データ）と確認用の一覧
 raw/
-sheet.png
+sheet*.png
 __pycache__/

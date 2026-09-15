@@ -85,8 +85,10 @@ const skinStore = {
 };
 let skinName = params.get('skin') ?? skinStore.get() ?? CONFIG.skin.default;
 
+let currentSkin = null;
 async function applySkin(name) {
   const skin = await loadSkin(name, { colors: COLORS });
+  currentSkin = skin;
   renderer.setSkin(skin);
   const credit = $('skin-credit');
   credit.textContent = skin.credit;
@@ -448,6 +450,11 @@ function showResult() {
     fav.innerHTML = `<span class="swatch" style="background:${c.fill}"></span>${c.name}`;
     bar('r-favorite-bar', r.favoriteShare, c.fill === '#ffffff' ? c.band : c.fill);
   }
+  // R11: today's favorite member celebrating (only skins with pose art)
+  const poseEl = $('r-pose');
+  const pose = r.favorite !== null ? currentSkin?.pieces[r.favorite]?.pose : null;
+  poseEl.hidden = !pose;
+  if (pose) poseEl.src = pose.src;
   setScreen('result');
 
   countUp($('r-score'), r.score, (v) => v.toLocaleString('ja-JP'));
@@ -593,7 +600,7 @@ if (pos) {
   // ?pos= freezes a representative state for design.html and screenshots
   frozen = true;
   settleNow();
-  if (['play', 'combo', 'fever', 'hurry', 'rescue', 'special', 'endless', 'spurt', 'bonus'].includes(pos)) setScreen('play');
+  if (['play', 'combo', 'fever', 'hurry', 'rescue', 'special', 'endless', 'spurt', 'bonus', 'pop'].includes(pos)) setScreen('play');
   if (pos === 'play') {
     frozenTrace = field.findChain(3) ?? [];
   } else if (pos === 'combo') {
@@ -636,6 +643,13 @@ if (pos) {
     game.state.bangs = 5;
     app.classList.remove('waiting');
     toast('3 個からつなごう', 1e9);
+  } else if (pos === 'pop') {
+    // A 4-chain the moment it bursts: pop faces swelling, confetti just leaving
+    const chain = field.findChain(4) ?? field.findChain(3);
+    Object.assign(game.state, { timerRunning: true, timeLeft: 42, score: 31200 });
+    app.classList.remove('waiting');
+    if (chain) game.commit(chain);
+    frozenAdvance = CONFIG.render.popGhost * 0.55;
   } else if (pos === 'spurt') {
     Object.assign(game.state, { timerRunning: true, timeLeft: 8, elapsed: 52, score: 98760, bangs: 5, bangProgress: 5.5, lastSpurt: true });
     app.classList.remove('waiting');

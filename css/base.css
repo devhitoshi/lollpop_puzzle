@@ -409,6 +409,17 @@ body {
   position: relative;
 }
 
+/* R11: the favorite member's pose on the result screen */
+.screen > .result-pose {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.result-pose[hidden] {
+  display: none;
+}
+
 .screen-deco {
   position: absolute;
   inset: 0;

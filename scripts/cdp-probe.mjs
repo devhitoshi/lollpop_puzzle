@@ -1,5 +1,5 @@
 // Real-time smoke test over the Chrome DevTools Protocol: open a URL, wait, collect console errors and page state.
-// usage: node cdp-probe.mjs <url> <waitMs> [--reduced] [--eval=<JS expression>]
+// usage: node cdp-probe.mjs <url> <waitMs> [--reduced] [--eval=<JS expression>] [--shot=<png path>]
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -8,6 +8,7 @@ import { join } from 'node:path';
 const [url, waitMs = '20000', ...flags] = process.argv.slice(2);
 const flag = flags.includes('--reduced') ? '--reduced' : null;
 const extra = flags.find((f) => f.startsWith('--eval='))?.slice(7);
+const shot = flags.find((f) => f.startsWith('--shot='))?.slice(7);
 const profile = mkdtempSync(join(tmpdir(), 'cdp-'));
 const port = 9300 + Math.floor(Math.random() * 500);
 const chrome = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', [
@@ -50,6 +51,11 @@ if (extra) {
   console.log('eval:', JSON.stringify(more.result.value ?? more.result.description));
 }
 console.log(errors.length ? `errors:\n${errors.join('\n')}` : 'errors: none');
+if (shot) {
+  const { data } = await send('Page.captureScreenshot', { format: 'png' });
+  (await import('node:fs')).writeFileSync(shot, Buffer.from(data, 'base64'));
+  console.log('shot:', shot);
+}
 ws.close();
 chrome.kill();
 await sleep(500);
