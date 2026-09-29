@@ -540,6 +540,14 @@ body {
   line-height: 1.7;
 }
 
+/* Links for players who got curious about the group (2026-09-30) */
+.about { display: grid; gap: 4px; justify-items: center; text-align: center; }
+.about-head { margin: 0; font-size: 13px; font-weight: 700; }
+.about-lead { margin: 0; font-size: 11px; line-height: 1.5; opacity: 0.75; }
+.about-links { display: grid; grid-template-columns: repeat(2, auto); gap: 4px 16px; font-size: 13px; font-weight: 700; }
+.about-links a, .about-title { color: inherit; }
+.about-title { justify-self: center; font-size: 12px; font-weight: 700; }
+
 .festival {
   display: flex;
   align-items: center;

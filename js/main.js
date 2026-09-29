@@ -556,6 +556,11 @@ $('howto').addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeHowto();
 });
 $('btn-share').addEventListener('click', shareResult);
+// Outbound links to the group (title T12, result R12), so GA shows whether the game sends anyone on.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[data-link]');
+  if (a) track('outbound_click', { link: a.dataset.link });
+});
 $('btn-again').addEventListener('click', () => {
   newMatch();
   setScreen('play');

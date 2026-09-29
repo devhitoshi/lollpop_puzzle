@@ -344,15 +344,11 @@
       parts: [['W7', '「!」ゲージの見本', 'H3 と同じ色順'], ['W8', 'はじめる', 'フィーバーで消した後に出る']],
     },
     {
-      id: 'R5', name: '結果：共有と導線', desc: 'G6 の下に続く。カードを画像で保存（端末の共有シート）と X の投稿画面。その下に曲・公演・グループへの導線。',
-      html: `<div class="m-band white" style="top:0;padding-top:30px"><p style="font-size:12px;font-weight:700;color:#71646b">RESULT</p><p style="color:#1d1216;font-weight:700">ポップなお祭り度 <b style="font-size:40px;color:#d6006e">71</b>%</p></div>
-        <div class="m-band" style="top:150px"><div class="m-btn">画像を保存・シェア</div><div class="m-btn ghost">X で投稿</div></div>
-        ${tag('R5', 'left:24px;right:24px;top:172px;height:56px')}${tag('R6', 'left:24px;right:24px;top:236px;height:56px')}
-        <div class="m-band white" style="top:330px;bottom:0"><p style="font-size:12px;font-weight:700;color:#71646b">ろりぽっぷ!!!!!!! をもっと</p></div>
-        <div class="m-band m-links" style="top:380px;background:#fff"><a style="color:#d6006e;border-color:#f2e2ea">曲を聴く <span>Apple Music・Spotify ↗</span></a><a style="color:#d6006e;border-color:#f2e2ea">次の公演 <span>TimeTree ↗</span></a><a style="color:#d6006e;border-color:#f2e2ea">ろりぽっぷ!!!!!!! とは <span>→</span></a></div>
-        ${tag('R7', 'left:24px;right:24px;top:400px;height:50px')}${tag('R8', 'left:24px;right:24px;top:452px;height:50px')}${tag('R9', 'left:24px;right:24px;top:504px;height:50px')}
-        <div class="m-band" style="top:auto;bottom:0;background:#1a1113"><div class="m-btn">もう一回</div><p style="font-size:12px;color:#d9c4ce;margin-top:10px">非公式のファン制作（AIぽっぱー）</p></div>`,
-      parts: [['R5', '画像を保存・シェア', 'スマホは共有シート、PC は PNG を保存'], ['R6', 'X で投稿', '投稿画面を開く。文面とハッシュタグは S6'], ['R7', '曲を聴く', 'Apple Music・Spotify（現名義）'], ['R8', '次の公演', 'TimeTree 公開カレンダー'], ['R9', 'ろりぽっぷ!!!!!!! とは', 'A へ']],
+      id: 'R5', name: '結果：ろりぽっぷ!!!!!!! が気になったら', desc: 'G6 の R3・R7・R4 の下に続く（2026-09-30 実装）。紹介 1 行と、グループを知る先への 4 リンク。どれも別タブで開き、GA の outbound_click で数える。タイトル画面には T12「ろりぽっぷ!!!!!!! って？」（ファンサイトのトップへ）。',
+      html: `<div class="m-band white" style="top:0;bottom:0;padding-top:40px"><p style="font-size:14px;font-weight:700;color:#1d1216">ろりぽっぷ!!!!!!! が気になったら</p><p style="font-size:12px;color:#71646b;margin-top:6px">東京の 5 人組アイドルグループ<br>2024 年 11 月デビュー</p></div>
+        <div class="m-band m-links" style="top:130px;background:#fff"><a style="color:#d6006e;border-color:#f2e2ea">曲を聴く <span>最新 EP「全力疾走」（linkco.re）↗</span></a><a style="color:#d6006e;border-color:#f2e2ea">次のライブ <span>TimeTree ↗</span></a><a style="color:#d6006e;border-color:#f2e2ea">公式 X <span>@lollipop_1116 ↗</span></a><a style="color:#d6006e;border-color:#f2e2ea">ファンサイト・ほかのゲーム <span>ろりぽっぷ!!!!!!! JAPAN ↗</span></a></div>
+        ${tag('R12', 'left:24px;right:24px;top:30px;height:320px')}`,
+      parts: [['R12', 'ろりぽっぷ!!!!!!! が気になったら', '曲を聴く（linkco.re/TMEz4nb9）・次のライブ（TimeTree）・公式 X・ファンサイトのゲーム一覧'], ['T12', 'ろりぽっぷ!!!!!!! って？', 'タイトル画面。ファンサイトのトップへ']],
     },
     {
       id: 'S', name: '共有カード（1200×630）', desc: '結果を画像にして X に貼る。飴の装飾はコードで描く。写真・似顔絵は使わない。',
