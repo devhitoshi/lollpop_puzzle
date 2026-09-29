@@ -630,6 +630,88 @@ body {
   pointer-events: none;
 }
 
+/* W: how to play — a card over the title (or over a match that is about to start) */
+.howto {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--space-sm);
+  overflow-y: auto;
+}
+
+.howto[hidden] {
+  display: none;
+}
+
+.howto-card {
+  display: grid;
+  gap: var(--space-sm);
+  width: min(100%, 400px);
+  padding: 20px 18px 18px;
+}
+
+.howto-title {
+  margin: 0;
+}
+
+.howto-steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.howto-steps li {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.howto-steps li > :first-child {
+  grid-row: 1 / 3;
+  justify-self: center;
+}
+
+.howto-steps b {
+  font-size: 15px;
+}
+
+.howto-steps span:last-child {
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.howto-steps em {
+  font-style: normal;
+  font-weight: 900;
+}
+
+.howto-dots {
+  display: flex;
+}
+
+.howto-dots i {
+  width: 18px;
+  height: 18px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25);
+}
+
+.howto-dots i.star {
+  width: 26px;
+  height: 26px;
+  margin-left: 2px;
+  border-radius: 0;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   #score.bump,
   .app.hurry #time,

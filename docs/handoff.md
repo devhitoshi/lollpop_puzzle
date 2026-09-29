@@ -7,7 +7,19 @@
 - 設計書：[`design.html`](../design.html)（公開先 `/design`）。オーナーは部品番号で修正を指示する
 - 流れの正：スキル `app-spec-flow`（要件 → 設計書 → 実装 → 番号で修正 → 公開）
 
-## いまの作業（2026-09-15 昼、ここから再開）
+## 2026-09-29：デプロイナウに公開した（ここから再開）
+
+- **公開済み**：https://lollpop-puzzle.lolipop-now.app/ （プロジェクト ID `01M3P9F4MB2T3VJB4B6Q20WWYV`、`.lolipop/project.json` は CLI が作らないので手で置いた・gitignore 済み）
+- **公開はステージングから**：デプロイナウは `.` 始まり以外を全部公開するので、リポジトリ直下からは出さない。`index.html design.html og.png LICENSE css js assets design` だけを `work/sandbox/lollpop_puzzle_deploy/` にコピー（`assets/skins/README.md` は外す）→ リポジトリ直下で `lolipop deploy --dir ../../sandbox/lollpop_puzzle_deploy`
+  - 公開後に確認済み：`/` と JS・駒画像・`og.png` が 200、`/.git/HEAD` `/raw/…` `/sheet.png` `/README.md` `/docs/…` `/scripts/…` `/.lolipop/…` が 404。本番 URL で bot が結果画面まで回り、実行時エラーなし（`data/words.json` の 404 だけ。言葉は未実装のため想定内）
+- この日に入れたもの
+  - **遊び方 W（簡易版）**：T4 を有効化。4 項目のカード（`#howto`）。初回の「あそぶ」「エンドレス」の前に 1 回だけ出る（`CONFIG.howto.storageKey`）。`?pos=howto`。物理で触って覚える版は 10 月以降の改善
+  - **X でシェア R7**：結果画面。intent URL（お祭り度・ランク・スコア・推し色・`CONFIG.share.hashtags`）。画像の共有カード S は未実装（og.png がカードになる）
+  - **OG / favicon**：`og.png`（1200×630）は `scripts/og.html` を撮影したもの（作り方は og.html の先頭）
+- **応募フォームの送信はオーナー**（9 月の月間賞は 9/30 締切）
+- 残り：A キャンディポップ、言葉（`data/words.json`、オーナー確認待ち）、GA4、共有カード画像、物理版の W
+
+## 以前の作業（2026-09-15 昼）
 
 - **ブランチ** `feature/ui-stylish-endless-fx`。コミット f6733f0（E+・1 分／エンドレス・スター飴・演出）の上に 158335d（メンバー駒・既定をメンバーに）をコミット済み。push はしていない（main は 0d467f7 のまま）
 - **158335d の中身**
@@ -45,7 +57,7 @@
 | 公開先 | URL | 状態 |
 | --- | --- | --- |
 | Cloudflare Workers（プレビュー） | https://lollpop-puzzle.lollipopfan.workers.dev/ | 公開中。`npx wrangler deploy` |
-| デプロイナウ（本番・応募） | https://lollpop-puzzle.lolipop-now.app/ （予定） | **未公開**。`lolipop deploy --name lollpop-puzzle --framework static` |
+| デプロイナウ（本番・応募） | https://lollpop-puzzle.lolipop-now.app/ | **公開中**（2026-09-29）。ステージングから `lolipop deploy --dir …`（上の節） |
 
 公開後は必ず `/.git/HEAD` が 404 になることを確かめる（`.assetsignore`）。
 

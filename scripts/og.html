@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- Source of og.png (1200×630). Serve the repo root and shoot:
+     W=1200 H=630 bash ~/.claude/skills/app-spec-flow/scripts/shots.sh http://127.0.0.1:8791/scripts/og.html <out> og=v=1
+     Not published (scripts/ is excluded). -->
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@800;900&display=swap">
+<style>
+  :root { --ink: #3b1f35; --accent: #ff4f9a; --paper: #fff3f8; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden; position: relative;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,79,154,.12) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(255,79,154,.12) 0 1px, transparent 1px 28px),
+      var(--paper);
+    font-family: "M PLUS Rounded 1c", sans-serif; color: var(--ink);
+  }
+  .stripes { position: absolute; top: -60px; right: -140px; width: 720px; height: 760px; transform: skewX(-24deg); display: flex; gap: 18px; }
+  .stripes i { flex: 1; }
+  .copy { position: absolute; left: 64px; top: 70px; width: 600px; }
+  .eyebrow { margin: 0 0 6px; font-weight: 900; font-size: 26px; }
+  .en { margin: 0 0 18px; color: var(--accent); font-weight: 900; font-size: 20px; letter-spacing: .3em; }
+  .bang { margin: 0; font: 400 150px/0.9 "Dela Gothic One", sans-serif; letter-spacing: -0.04em; color: var(--ink); text-shadow: 8px 8px 0 var(--accent); }
+  .name { display: inline-block; margin: 20px 0 0; padding: 10px 36px 14px 26px; background: var(--ink); color: #fff; font: 400 64px/1.1 "Dela Gothic One", sans-serif; clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%); }
+  .lead { margin: 30px 0 0; font-weight: 900; font-size: 30px; line-height: 1.5; }
+  .lead b { color: var(--accent); }
+  .note { position: absolute; left: 64px; bottom: 34px; font-weight: 800; font-size: 18px; color: #8d5a78; padding: 4px 10px; background: rgba(255,243,248,.92); }
+  .faces { position: absolute; right: 40px; top: 90px; width: 500px; height: 470px; }
+  .faces img { position: absolute; width: var(--s); filter: drop-shadow(0 8px 0 rgba(59,31,53,.18)); }
+</style>
+</head>
+<body>
+  <div class="stripes" aria-hidden="true"><i style="background:#ec6f80"></i><i style="background:#ffd96a"></i><i style="background:#a8e2f0"></i><i style="background:#7fcb9d"></i><i style="background:#ffb3d1"></i></div>
+  <div class="copy">
+    <p class="eyebrow">🍭 ろりぽっぷ!!!!!!! 非公式ファンゲーム</p>
+    <p class="en">FALLING CANDY PUZZLE</p>
+    <p class="bang">!!!!!!!</p>
+    <p class="name">落ちものパズル</p>
+    <p class="lead">同じ色をなぞって消す <b>1 分間</b>パズル<br>「!」を 7 個溜めて <b>!!!!!!! フィーバー</b></p>
+  </div>
+  <p class="note">非公式のファン制作です。運営・GMOペパボとは関係ありません。</p>
+  <div class="faces">
+    <img src="../assets/skins/members/kurumi_happy.png" style="--s:210px; left:150px; top:0" alt="">
+    <img src="../assets/skins/members/mayu_happy.png" style="--s:185px; left:0; top:110px" alt="">
+    <img src="../assets/skins/members/mau_happy.png" style="--s:185px; left:310px; top:120px" alt="">
+    <img src="../assets/skins/members/ami_happy.png" style="--s:185px; left:60px; top:280px" alt="">
+    <img src="../assets/skins/members/mana_fever.png" style="--s:185px; left:250px; top:285px" alt="">
+  </div>
+</body>
+</html>

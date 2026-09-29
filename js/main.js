@@ -545,17 +545,56 @@ function frame(now) {
 let frozenTrace = [];
 let frozenAdvance = 0; // ?pos= can show an effect a moment after it started
 
+// ---- W: how to play. Shown once before the first match on this device; T4 opens it any time.
+const howtoStore = createThemeStore(CONFIG.howto.storageKey);
+let afterHowto = null; // a start that waits for the card to close
+
+function openHowto(then = null) {
+  afterHowto = then;
+  $('howto').hidden = false;
+  $('btn-howto-close').focus({ preventScroll: true });
+}
+
+function closeHowto() {
+  $('howto').hidden = true;
+  howtoStore.set('1');
+  const then = afterHowto;
+  afterHowto = null;
+  then?.();
+}
+
+function startMatch(nextMode) {
+  const go = () => {
+    mode = nextMode;
+    newMatch();
+    setScreen('play');
+  };
+  if (howtoStore.get()) go();
+  else openHowto(go);
+}
+
+// R7: post the result to X (intent URL, no image — the page's og:image is the card)
+function shareResult() {
+  const r = game.summary();
+  const lines = [
+    `!!!!!!! 落ちものパズルで ポップなお祭り度 ${r.festival.percent}%（${r.festival.rank}）！`,
+    `スコア ${r.score.toLocaleString('ja-JP')}${r.favorite === null ? '' : `・今日の推し色は${COLORS[r.favorite].name}`}`,
+    CONFIG.share.hashtags.map((t) => `#${t}`).join(' '),
+  ];
+  const url = `${location.origin}${location.pathname}`;
+  const intent = `https://x.com/intent/post?text=${encodeURIComponent(lines.join('\n'))}&url=${encodeURIComponent(url)}`;
+  window.open(intent, '_blank', 'noopener');
+}
+
 // ---- buttons
-$('btn-play').addEventListener('click', () => {
-  mode = 'timed';
-  newMatch();
-  setScreen('play');
+$('btn-play').addEventListener('click', () => startMatch('timed'));
+$('btn-endless').addEventListener('click', () => startMatch('endless'));
+$('btn-howto').addEventListener('click', () => openHowto());
+$('btn-howto-close').addEventListener('click', closeHowto);
+$('howto').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeHowto();
 });
-$('btn-endless').addEventListener('click', () => {
-  mode = 'endless';
-  newMatch();
-  setScreen('play');
-});
+$('btn-share').addEventListener('click', shareResult);
 $('btn-again').addEventListener('click', () => {
   newMatch();
   setScreen('play');
@@ -572,7 +611,7 @@ $('btn-title').addEventListener('click', () => {
 });
 
 // iPhone: a light tick on these taps (js/haptics.js). No-op on Android and desktops.
-attachHaptics([$('btn-play'), $('btn-endless'), $('btn-again'), $('btn-title'), $('rescue'), ...vibeSwitch.querySelectorAll('button')]);
+attachHaptics([$('btn-play'), $('btn-endless'), $('btn-again'), $('btn-title'), $('btn-howto'), $('btn-howto-close'), $('btn-share'), $('rescue'),...vibeSwitch.querySelectorAll('button')]);
 
 new ResizeObserver(() => {
   renderer.resize();
@@ -687,6 +726,8 @@ if (pos) {
     Object.assign(game.state, { score: 113400, maxCombo: 23, totalCleared: 190, cleared: [50, 32, 41, 40, 27], elapsed: 80, endReason: 'timeup' });
     game.state.fever.count = 4;
     showResult();
+  } else if (pos === 'howto') {
+    openHowto();
   }
 }
 

@@ -6,6 +6,16 @@
   <title>!!!!!!! 落ちものパズル｜アイドル「ろりぽっぷ!!!!!!!」の非公式ファンゲーム</title>
   <meta name="description" content="アイドルグループ「ろりぽっぷ!!!!!!!」のメンバーカラーのロリポップを、なぞって消す 1 分間のパズル（エンドレスもあり）。非公式のファン制作です。">
   <meta name="theme-color" content="#fff3f8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8D%AD%3C/text%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="!!!!!!! 落ちものパズル">
+  <meta property="og:title" content="!!!!!!! 落ちものパズル｜ろりぽっぷ!!!!!!! 非公式ファンゲーム">
+  <meta property="og:description" content="メンバーカラーのロリポップをなぞって消す 1 分間のパズル。7 個溜めて !!!!!!! フィーバー！（非公式のファン制作）">
+  <meta property="og:url" content="https://lollpop-puzzle.lolipop-now.app/">
+  <meta property="og:image" content="https://lollpop-puzzle.lolipop-now.app/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap">
@@ -86,7 +96,7 @@
         <button class="btn btn-primary" id="btn-play" data-part="T3"><small class="en">START · 1 MINUTE</small>あそぶ</button>
         <div class="btn-row">
           <button class="btn btn-ghost" id="btn-endless" data-part="T11"><small class="en">ENDLESS</small>エンドレス</button>
-          <button class="btn btn-ghost" id="btn-howto" data-part="T4" disabled><small class="en">HOW TO</small>遊び方</button>
+          <button class="btn btn-ghost" id="btn-howto" data-part="T4"><small class="en">HOW TO</small>遊び方</button>
         </div>
         <p class="note" data-part="T6">非公式のファン制作（AIぽっぱー）です。<br>ろりぽっぷ!!!!!!! の運営・GMOペパボとは関係ありません。</p>
         <p class="note" id="skin-credit" data-part="T7" hidden></p>
@@ -126,10 +136,44 @@
       </div>
       <div class="result-actions">
         <button class="btn btn-primary" id="btn-again" data-part="R3"><small class="en">RETRY</small>もう一回</button>
-        <button class="btn btn-ghost" id="btn-title" data-part="R4"><small class="en">BACK</small>タイトルへ</button>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="btn-share" data-part="R7"><small class="en">SHARE</small>X でシェア</button>
+          <button class="btn btn-ghost" id="btn-title" data-part="R4"><small class="en">BACK</small>タイトルへ</button>
+        </div>
         <p class="note">非公式のファン制作（AIぽっぱー）です。<br>ろりぽっぷ!!!!!!! の運営・GMOペパボとは関係ありません。</p>
       </div>
     </section>
+
+    <!-- W: how to play. Opens from T4, and once before the first match on this device. -->
+    <div class="howto" id="howto" data-part="W" role="dialog" aria-modal="true" aria-labelledby="howto-heading" hidden>
+      <div class="howto-card">
+        <p class="eyebrow en">HOW TO PLAY</p>
+        <h2 class="howto-title" id="howto-heading">遊び方</h2>
+        <ol class="howto-steps">
+          <li data-part="W1">
+            <span class="howto-dots" aria-hidden="true"><i style="--c:#cc0000"></i><i style="--c:#cc0000"></i><i style="--c:#cc0000"></i></span>
+            <b>なぞって消す</b>
+            <span>同じ色を <em>3 個以上</em> なぞって、指を離すと消える。続けて消すと <em>コンボ</em>。</span>
+          </li>
+          <li data-part="W2">
+            <span class="howto-dots" aria-hidden="true"><i style="--c:#f5c400"></i><i class="star" style="--c:#f5c400"></i></span>
+            <b>長くつなぐとスター飴</b>
+            <span><em>7 個以上</em> つなぐとスター飴が出る。タップすると周りをまとめて消せる。</span>
+          </li>
+          <li data-part="W3">
+            <span class="howto-bangs" aria-hidden="true">!!!!!!!</span>
+            <b>!!!!!!! フィーバー</b>
+            <span>8 個消すごとに「!」が 1 個。7 個たまると <em>フィーバー</em>（得点 3 倍・時間 +5 秒）。</span>
+          </li>
+          <li data-part="W4">
+            <span class="howto-bomb" aria-hidden="true">BOMB</span>
+            <b>困ったらぽっぷボム</b>
+            <span>つなげる組が無いときは下をふっとばして混ぜ直す（1 試合 3 回）。</span>
+          </li>
+        </ol>
+        <button class="btn btn-primary" id="btn-howto-close"><small class="en">OK</small>わかった！</button>
+      </div>
+    </div>
 
     <canvas class="fx-overlay" id="fx-overlay" aria-hidden="true"></canvas>
   </div>

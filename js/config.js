@@ -204,6 +204,10 @@ export const CONFIG = {
 
   // Vibration (ms, or a pattern). Android uses navigator.vibrate. iPhone has no vibration API, so js/haptics.js
   // gives a single light tick on button taps instead (tracing can't vibrate there).
+  // W: how to play, shown once before the first match (remembered on the device)
+  howto: { storageKey: 'lollpop-puzzle:howto-seen' },
+  // R7: X share. Hashtags without "#".
+  share: { hashtags: ['ろりぽっぷパズル'] },
   vibration: {
     link: 12, // each candy added to the trace
     clear: 22,

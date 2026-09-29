@@ -5,7 +5,7 @@
 
 An unofficial fan-made puzzle game for the Japanese idol group "Lollipop!!!!!!!": trace candies of the same member color to clear them.
 
-- プレビュー：https://lollpop-puzzle.lollipopfan.workers.dev/ ／ 画面設計：`/design`
+- 公開：https://lollpop-puzzle.lolipop-now.app/ （デプロイナウ）／ プレビュー：https://lollpop-puzzle.lollipopfan.workers.dev/ ／ 画面設計：`/design`
 - デプロイナウコンテスト（GMOペパボ）応募作（2026 年 9 月）
 - 引き継ぎと今後の計画：[`docs/handoff.md`](docs/handoff.md)
 
@@ -37,7 +37,7 @@ node --test   # 盤面・ゲーム進行・スキン・テーマのテスト
 | `?mode=endless` | エンドレスで始める（既定は 1 分モード） |
 | `?time=40` | 1 分モードの秒数 |
 | `?seed=1` | 盤面の乱数を固定 |
-| `?pos=title` `play` `combo` `fever` `rescue` `special` `spurt` `bonus` `hurry` `endless` `result` `gameover` | その状態で止める（設計書・スクリーンショット用） |
+| `?pos=title` `howto` `play` `combo` `fever` `rescue` `special` `spurt` `bonus` `hurry` `endless` `result` `gameover` | その状態で止める（設計書・スクリーンショット用） |
 | `?labels=1` | 部品番号の札を重ねる |
 | `?debug=1` | fps と内部値 |
 | `?bot=1` | 自動プレイ（動作確認用） |
