@@ -7,7 +7,14 @@
 - 設計書：[`design.html`](../design.html)（公開先 `/design`）。オーナーは部品番号で修正を指示する
 - 流れの正：スキル `app-spec-flow`（要件 → 設計書 → 実装 → 番号で修正 → 公開）
 
-## 2026-09-29：デプロイナウに公開した（ここから再開）
+## 2026-09-29 夜：改名とロゴ（ここから再開）
+
+- **タイトルは「!!!!!!! なぞってぽっぷ」**（英字 TRACE & POP PUZZLE）。ジャンルは「なぞり消しパズル」（オーナー決定。落ちものパズルではない）。URL とリポジトリ名は変えない
+- タイトル画面の説明文：「同じメンバーを 3 つ以上なぞって消そう。1 分間でどこまでいける？」
+- ロゴは SVG（`scripts/make_logo.py` → index.html と scripts/og.html を書き換え。og.png は og.html を撮り直す）。「!」はメンバーカラー 7 色（卒業生を含む・アー写の投稿順）
+- **駒（T8）と画面（T9）の切り替えは廃止**。駒は members、画面は stylish に固定。端末の保存値は読まない。`?skin=` `?theme=` はテスト用に残す
+
+## 2026-09-29：デプロイナウに公開した
 
 - **公開済み**：https://lollpop-puzzle.lolipop-now.app/ （プロジェクト ID `01M3P9F4MB2T3VJB4B6Q20WWYV`、`.lolipop/project.json` は CLI が作らないので手で置いた・gitignore 済み）
 - **公開はステージングから**：デプロイナウは `.` 始まり以外を全部公開するので、リポジトリ直下からは出さない。`index.html design.html og.png LICENSE css js assets design` だけを `work/sandbox/lollpop_puzzle_deploy/` にコピー（`assets/skins/README.md` は外す）→ リポジトリ直下で `lolipop deploy --dir ../../sandbox/lollpop_puzzle_deploy`

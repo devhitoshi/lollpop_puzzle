@@ -38,8 +38,8 @@ for i, (c, s) in enumerate(COLORS):
 parts.append('</g>')
 T = 'font-family="Dela Gothic One, M PLUS Rounded 1c, sans-serif" font-size="45" text-anchor="middle"'
 parts.append(f'<g transform="translate(180 190) skewX(-8)">')
-parts.append(f'<text x="5" y="5" {T} fill="#ff4f9a" stroke="#ff4f9a" stroke-width="9" stroke-linejoin="round">落ちものパズル</text>')
-parts.append(f'<text {T} fill="#fff" stroke="{INK}" stroke-width="9" stroke-linejoin="round" paint-order="stroke fill">落ちものパズル</text>')
+parts.append(f'<text x="5" y="5" {T} fill="#ff4f9a" stroke="#ff4f9a" stroke-width="9" stroke-linejoin="round">なぞってぽっぷ</text>')
+parts.append(f'<text {T} fill="#fff" stroke="{INK}" stroke-width="9" stroke-linejoin="round" paint-order="stroke fill">なぞってぽっぷ</text>')
 parts.append('</g></svg>')
 svg = ''.join(parts)
 for p, attr in [('index.html', ''), ('scripts/og.html', ' width="480"')]:

@@ -441,14 +441,10 @@ body {
   gap: var(--space-sm);
 }
 
+/* Only the vibration switch (T10) is left: the piece (T8) and theme (T9) switches were removed on 2026-09-29 */
 .switches {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 6px 10px;
-}
-
-.switches > [data-part="T9"] {
-  grid-column: 1 / -1;
 }
 
 .btn-row {

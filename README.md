@@ -1,9 +1,9 @@
-# !!!!!!! 落ちものパズル
+# !!!!!!! なぞってぽっぷ
 
-アイドルグループ「ろりぽっぷ!!!!!!!」のメンバーカラーのロリポップを、なぞって消す 1 分間のパズル（エンドレスもあり）。
+アイドルグループ「ろりぽっぷ!!!!!!!」のメンバーの顔の駒を、同じメンバーどうし 3 つ以上なぞってつなげて消す、1 分間のなぞり消しパズル（エンドレスもあり）。
 **非公式のファン制作物です。**ろりぽっぷ!!!!!!! の運営・GMOペパボとは関係ありません。
 
-An unofficial fan-made puzzle game for the Japanese idol group "Lollipop!!!!!!!": trace candies of the same member color to clear them.
+An unofficial fan-made puzzle game for the Japanese idol group "Lollipop!!!!!!!": trace and link the same member to pop them.
 
 - 公開：https://lollpop-puzzle.lolipop-now.app/ （デプロイナウ）／ プレビュー：https://lollpop-puzzle.lollipopfan.workers.dev/ ／ 画面設計：`/design`
 - デプロイナウコンテスト（GMOペパボ）応募作（2026 年 9 月）
@@ -32,8 +32,8 @@ node --test   # 盤面・ゲーム進行・スキン・テーマのテスト
 
 | クエリ | 意味 |
 | --- | --- |
-| `?theme=stylish` / `candy` | 画面の見た目（タイトル画面の T9 でも切り替えられる。candy は準備中） |
-| `?skin=candy` / `members` / `sample` | 駒の見た目（タイトル画面でも切り替えられる） |
+| `?theme=stylish` / `candy` | 画面の見た目（テスト用。通常は stylish 固定。candy は準備中） |
+| `?skin=candy` / `members` / `sample` | 駒の見た目（テスト用。通常は members 固定） |
 | `?mode=endless` | エンドレスで始める（既定は 1 分モード） |
 | `?time=40` | 1 分モードの秒数 |
 | `?seed=1` | 盤面の乱数を固定 |

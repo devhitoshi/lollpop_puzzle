@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>!!!!!!! 落ちものパズル 画面設計</title>
+<title>!!!!!!! なぞってぽっぷ 画面設計</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,7 +96,7 @@
 </head>
 <body>
 <main>
-  <h1>!!!!!!! 落ちものパズル 画面設計</h1>
+  <h1>!!!!!!! なぞってぽっぷ 画面設計</h1>
   <p class="lead">
     実物を状態ごとに止めて並べています。オレンジの番号札が部品の番号です。「B2 を上に」「M2 をもっと弾ませて」のように、番号で指示してください。<br>
     <b>実装済み</b>の画面は本物を埋め込んでいます。<b>案</b>の画面はまだ作っていないモックなので、作る前に番号で直せます。
@@ -184,9 +184,9 @@
     {
       id: 'G1', name: 'タイトル', q: 'pos=title',
       desc: '淡いピンクの地に斜めのストライプとロゴ。中央の斜めの窓から、後ろで落ちてくる飴が見える。',
-      parts: [['T1', '見出しの上の小さな表記', ''], ['T2', 'ロゴ（FALLING CANDY PUZZLE／!!!!!!!／落ちものパズル）', '「!!!!!!!」は傾けてピンクの影'], ['T5', '説明 1 文', ''],
-        ['T8', '駒の切り替え（飴／メンバー）', '選ぶと後ろの盤面がすぐ変わる。次に開いたときも覚えている。メンバーの絵が無いうちは「準備中」で押せない'],
-        ['T9', '画面の切り替え（スタイリッシュ／キャンディ）', '選ぶと画面全体の見た目が再読み込みなしで変わり、端末に保存。キャンディ（A）はできるまで「準備中」'],
+      parts: [['T1', '見出しの上の小さな表記', ''], ['T2', 'ロゴ（TRACE & POP PUZZLE／!!!!!!!／なぞってぽっぷ）', 'インライン SVG（scripts/make_logo.py）。「!」7 個はメンバーカラー 7 色（卒業生を含む）のロリポップ'], ['T5', '説明 1 文', ''],
+        ['T8', '（廃止 2026-09-29）駒の切り替え', '駒はメンバーに固定。?skin= はテスト用'],
+        ['T9', '（廃止 2026-09-29）画面の切り替え', '画面は E+ に固定。?theme= はテスト用'],
         ['T10', '振動の切り替え（オン／オフ）', '端末に保存。オンにした瞬間に 1 回振動して強さが分かる。オフで iPhone のボタンの振動も止まる'],
         ['T3', 'あそぶ（START · 1 MINUTE）', '1 分モード。ピンクの斜めのボタン'], ['T11', 'エンドレス（ENDLESS）', 'のこりが減り続け、消して戻す。0 でゲームオーバー'], ['T4', '遊び方（HOW TO）', 'W を作るまで押せない'], ['T6', '非公式・運営と無関係の明記', ''], ['T7', 'スキンのクレジット', 'skin.json の credit。飴のときは出ない']],
     },
@@ -360,7 +360,7 @@
         <div class="m-card" style="top:90px">
           <div style="position:absolute;left:0;top:0;bottom:0;width:36%;background:#1a1113;display:grid;grid-template-columns:repeat(3,1fr);align-content:center;padding:6px">${Array.from({ length: 12 }, (_, i) => `<div class="m-candy" style="margin:3px;background:${fills[(i * 3 + 1) % 5]}"></div>`).join('')}</div>
           <div style="position:absolute;left:40%;top:10px;right:10px">
-            <div style="color:#d6006e;font-weight:900;font-size:20px;line-height:1">!!!!!!!</div><div style="font-weight:700;font-size:13px">落ちものパズル</div>
+            <div style="color:#d6006e;font-weight:900;font-size:20px;line-height:1">!!!!!!!</div><div style="font-weight:700;font-size:13px">なぞってぽっぷ</div>
             <div style="font-size:10px;font-weight:700;margin-top:6px">ポップなお祭り度</div><div style="font-size:30px;font-weight:900;color:#d6006e;line-height:1">71<span style="font-size:14px;color:#1d1216">%</span></div>
             <div style="font-size:11px;font-weight:700">お祭りの真ん中</div>
             <div style="font-size:9px;margin-top:4px;color:#45383e">213,400 点／最大 23 コンボ／推し色 くるみ</div>
@@ -369,7 +369,7 @@
         </div>
         ${tag('S1', 'left:14px;top:90px;width:131px;height:190px')}${tag('S2', 'left:152px;top:96px;width:120px;height:44px')}${tag('S3', 'left:152px;top:146px;width:120px;height:66px')}${tag('S4', 'left:152px;top:216px;width:220px;height:24px')}${tag('S5', 'left:152px;top:242px;width:220px;height:18px')}
         <div style="position:absolute;top:320px;left:14px;right:14px;padding:14px;background:#2a1a24;font-size:14px;line-height:1.7;color:#fff5f9">
-          <b>投稿文（S6）</b><br>ろりぽっぷ!!!!!!! の落ちものパズルで「ポップなお祭り度 71%」<br>最大 23 コンボ、推し色はくるみ🍭<br>#ろりぽっぷ #落ちものパズル<br>https://lollpop-puzzle.lolipop-now.app/
+          <b>投稿文（S6）</b><br>ろりぽっぷ!!!!!!! のなぞってぽっぷで「ポップなお祭り度 71%」<br>最大 23 コンボ、推し色はくるみ🍭<br>#ろりぽっぷパズル<br>https://lollpop-puzzle.lolipop-now.app/
         </div>${tag('S6', 'left:14px;top:320px;right:14px;height:150px')}`,
       parts: [['S1', '飴の装飾', 'その回で多く消した色を多めに'], ['S2', 'ロゴ', ''], ['S3', 'ポップなお祭り度と段階名', ''], ['S4', 'スコア・最大コンボ・推し色', ''], ['S5', '非公式の表記と URL', ''], ['S6', '投稿文', 'ハッシュタグは言葉の一覧の確認後に確定']],
     },

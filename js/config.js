@@ -106,24 +106,22 @@ export const CONFIG = {
 
   // Piece look. ?skin= overrides. See assets/skins/README.md
   skin: {
-    default: 'members', // used when the player hasn't chosen yet
-    // Shown on the title screen (T8). ?skin= still accepts any folder name for testing.
+    default: 'members', // always used: the title-screen switch (T8) was removed on 2026-09-29
+    // Known skins. ?skin= (testing only) accepts any folder name.
     choices: [
       { name: 'candy', label: '飴' },
       { name: 'members', label: 'メンバー' },
     ],
-    storageKey: 'lollpop-puzzle:skin',
   },
 
   // UI theme. ?theme= overrides. Colors and shapes live in css/themes/<name>.css
   theme: {
-    default: 'stylish', // used when the player hasn't chosen yet
-    // Shown on the title screen (T9). ready: false shows 「準備中」 and can't be picked.
+    default: 'stylish', // always used: the title-screen switch (T9) was removed on 2026-09-29
+    // Known themes for ?theme= (testing only). ready: false can't be picked.
     choices: [
       { name: 'stylish', label: 'スタイリッシュ' },
       { name: 'candy', label: 'キャンディ', ready: false },
     ],
-    storageKey: 'lollpop-puzzle:theme',
   },
 
   render: {

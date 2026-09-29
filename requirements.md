@@ -1,4 +1,4 @@
-# 要件：!!!!!!! 落ちものパズル
+# 要件：!!!!!!! なぞってぽっぷ（旧仮題：落ちものパズル）
 
 2026-09-14 のオーナーとの会話で決めた内容。雛形は `app-spec-flow/templates/requirements.md`。
 戦略の正は `lollpop_docs` ブランチ `strategy/20260911-deploynow-contest` の `strategy/research_2026-09-11_デプロイナウコンテスト参加戦略.md` 7 章。

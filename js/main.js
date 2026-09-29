@@ -7,7 +7,7 @@ import { createGame } from './game.js';
 import { createRenderer } from './render.js';
 import { createTraceInput } from './input.js';
 import { createFeedback } from './feedback.js';
-import { loadSkin, probeSkin } from './skin.js';
+import { loadSkin } from './skin.js';
 import { resolveTheme, createThemeStore, applyTheme } from './theme.js';
 import { attachHaptics, setHapticsEnabled } from './haptics.js';
 import { createParticles } from './particles.js';
@@ -47,24 +47,9 @@ vibeSwitch.addEventListener('click', (e) => {
 });
 applyVibration();
 
-// ---- theme: ?theme= > the player's last choice > CONFIG.theme.default (js/theme.js)
-const themeStore = createThemeStore(CONFIG.theme.storageKey);
-let themeName = resolveTheme({ param: params.get('theme'), stored: themeStore.get(), choices: CONFIG.theme.choices, fallback: CONFIG.theme.default });
+// ---- theme: fixed to CONFIG.theme.default. ?theme= is for testing only; stored choices from the old T9 switch are ignored.
+const themeName = resolveTheme({ param: params.get('theme'), stored: null, choices: CONFIG.theme.choices, fallback: CONFIG.theme.default });
 renderer.setTheme(applyTheme(themeName));
-
-const themeSwitch = $('theme-switch');
-themeSwitch.innerHTML = CONFIG.theme.choices
-  .map((c) => `<button type="button" role="radio" data-theme-name="${c.name}" aria-checked="${c.name === themeName}"${c.ready === false ? ' disabled' : ''}>${c.label}${c.ready === false ? '<small>準備中</small>' : ''}</button>`)
-  .join('');
-themeSwitch.addEventListener('click', (e) => {
-  const btn = e.target.closest('button[data-theme-name]');
-  if (!btn || btn.disabled || btn.dataset.themeName === themeName) return;
-  themeName = btn.dataset.themeName;
-  themeStore.set(themeName);
-  renderer.setTheme(applyTheme(themeName)); // no reload: CSS follows data-theme, the canvas redraws next frame
-  for (const b of themeSwitch.querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.themeName === themeName));
-  syncBoardFrame();
-});
 
 // The corner brackets (board-frame) sit on the field rectangle inside the canvas
 function syncBoardFrame() {
@@ -78,13 +63,8 @@ function syncBoardFrame() {
   frame.setProperty('--fh', `${b.y - a.y}px`);
 }
 
-// ---- skin: ?skin= (testing) > the player's last choice > CONFIG.skin.default
-const skinStore = {
-  get: () => { try { return localStorage.getItem(CONFIG.skin.storageKey); } catch { return null; } },
-  set: (v) => { try { localStorage.setItem(CONFIG.skin.storageKey, v); } catch { /* private mode */ } },
-};
-let skinName = params.get('skin') ?? skinStore.get() ?? CONFIG.skin.default;
-
+// ---- skin: fixed to CONFIG.skin.default (members). ?skin= is for testing only; stored choices from the old T8 switch
+// are ignored, so nobody stays stuck on the candy pieces.
 let currentSkin = null;
 async function applySkin(name) {
   const skin = await loadSkin(name, { colors: COLORS });
@@ -97,30 +77,7 @@ async function applySkin(name) {
 }
 
 // Skin first, so the first frame already shows the right pieces. Failures fall back to candy.
-skinName = (await applySkin(skinName)).name;
-
-const skinSwitch = $('skin-switch');
-skinSwitch.innerHTML = CONFIG.skin.choices
-  .map((c) => `<button type="button" role="radio" data-skin="${c.name}" aria-checked="${c.name === skinName}">${c.label}</button>`)
-  .join('');
-// Members art may not be ready yet: disable that choice instead of silently showing candy.
-for (const btn of skinSwitch.querySelectorAll('button')) {
-  if (btn.dataset.skin === 'candy') continue;
-  probeSkin(btn.dataset.skin, { colors: COLORS }).then((ok) => {
-    if (ok) return;
-    btn.disabled = true;
-    btn.insertAdjacentHTML('beforeend', '<small>準備中</small>');
-  });
-}
-skinSwitch.addEventListener('click', async (e) => {
-  const btn = e.target.closest('button[data-skin]');
-  if (!btn || btn.disabled || btn.dataset.skin === skinName) return;
-  const skin = await applySkin(btn.dataset.skin);
-  skinName = skin.name;
-  skinStore.set(skinName);
-  for (const b of skinSwitch.querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.skin === skinName));
-  if (skin.missing.length) toast('一部のメンバーの絵を読み込めなかったので、その駒は飴になっています', 2600);
-});
+await applySkin(params.get('skin') ?? CONFIG.skin.default);
 
 // Confetti over the DOM screens (result), drawn on #fx-overlay in CSS px. Idle when nothing is flying.
 const overlay = (() => {
@@ -577,7 +534,7 @@ function startMatch(nextMode) {
 function shareResult() {
   const r = game.summary();
   const lines = [
-    `!!!!!!! 落ちものパズルで ポップなお祭り度 ${r.festival.percent}%（${r.festival.rank}）！`,
+    `!!!!!!! なぞってぽっぷで ポップなお祭り度 ${r.festival.percent}%（${r.festival.rank}）！`,
     `スコア ${r.score.toLocaleString('ja-JP')}${r.favorite === null ? '' : `・今日の推し色は${COLORS[r.favorite].name}`}`,
     CONFIG.share.hashtags.map((t) => `#${t}`).join(' '),
   ];
