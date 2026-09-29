@@ -635,24 +635,29 @@
   letter-spacing: 0.3em;
 }
 
-[data-theme="stylish"] .title-bang {
+/* T2: the logo is an inline SVG (index.html) so it can use the page's web fonts */
+[data-theme="stylish"] .title-logo .logo {
   display: block;
-  margin-top: 2px;
-  color: var(--ink);
-  font: 400 clamp(64px, 20vw, 84px) / 1 var(--display);
-  letter-spacing: -0.02em;
-  transform: skewX(-12deg);
-  text-shadow: 6px 6px 0 var(--accent);
+  width: min(100%, 380px);
+  height: auto;
+  margin-top: 6px;
+  overflow: visible;
 }
 
-[data-theme="stylish"] .title-name {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 6px 24px;
-  background: var(--ink);
-  color: #fff;
-  font: 400 clamp(24px, 7.4vw, 30px) / 1.2 var(--display);
-  clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+[data-theme="stylish"] .logo text {
+  font-family: var(--display);
+}
+
+/* The seven lollipops hop one after another */
+[data-theme="stylish"] .logo-pop > * {
+  animation: logo-hop 2.8s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+  animation-delay: calc(var(--i) * 0.12s);
+}
+
+@keyframes logo-hop {
+  0%, 30%, 100% { translate: 0 0; }
+  12% { translate: 0 -7px; }
+  20% { translate: 0 1px; }
 }
 
 [data-theme="stylish"] .lead {
@@ -928,7 +933,8 @@
   [data-theme="stylish"] .best.new,
   [data-theme="stylish"] .screen-result.fx-in .result-pose,
   [data-theme="stylish"] .screen-result.fx-in .festival,
-  [data-theme="stylish"] .screen-result.fx-in .festival-rank {
+  [data-theme="stylish"] .screen-result.fx-in .festival-rank,
+  [data-theme="stylish"] .logo-pop > * {
     animation: none;
   }
 

@@ -441,10 +441,6 @@ body {
   gap: var(--space-sm);
 }
 
-.title-bang i {
-  font-style: normal;
-}
-
 .switches {
   display: grid;
   grid-template-columns: 1fr 1fr;
