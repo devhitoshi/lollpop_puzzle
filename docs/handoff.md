@@ -24,7 +24,8 @@
   - **X でシェア R7**：結果画面。intent URL（お祭り度・ランク・スコア・推し色・`CONFIG.share.hashtags`）。画像の共有カード S は未実装（og.png がカードになる）
   - **OG / favicon**：`og.png`（1200×630）は `scripts/og.html` を撮影したもの（作り方は og.html の先頭）
 - **応募フォームの送信はオーナー**（9 月の月間賞は 9/30 締切）
-- 残り：A キャンディポップ、言葉（`data/words.json`、オーナー確認待ち）、GA4、共有カード画像、物理版の W
+- 残り：A キャンディポップ、言葉（`data/words.json`、オーナー確認待ち）、GA4、共有カード画像、物理版の W、**BGM（合成のオリジナル曲に決定済みだが未実装。`js/feedback.js` は効果音だけ）**
+- 記事の下書き：`docs/articles/contest_description.md`（応募フォーム用の作品説明）、`docs/articles/zenn_lollpop_puzzle.md`（Zenn 技術記事、`published: false`）
 
 ## 以前の作業（2026-09-15 昼）
 
