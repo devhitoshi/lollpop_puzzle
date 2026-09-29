@@ -11,6 +11,7 @@ import { loadSkin } from './skin.js';
 import { resolveTheme, createThemeStore, applyTheme } from './theme.js';
 import { attachHaptics, setHapticsEnabled } from './haptics.js';
 import { createParticles } from './particles.js';
+import { track } from './analytics.js';
 
 const params = new URLSearchParams(location.search);
 const seedParam = params.has('seed') ? Number(params.get('seed')) >>> 0 : null;
@@ -367,6 +368,7 @@ function showBanner(text, variant = '') {
 
 function showResult() {
   const r = game.summary();
+  track('game_end', { mode, score: r.score });
   $('result-heading').textContent = r.endReason === 'gameover' ? 'GAME OVER' : 'RESULT';
   $('r-tier').textContent = r.festival.label;
   const rankEl = $('r-rank');
@@ -525,6 +527,7 @@ function startMatch(nextMode) {
     mode = nextMode;
     newMatch();
     setScreen('play');
+    track('game_start', { mode });
   };
   if (howtoStore.get()) go();
   else openHowto(go);
@@ -533,6 +536,7 @@ function startMatch(nextMode) {
 // R7: post the result to X (intent URL, no image — the page's og:image is the card)
 function shareResult() {
   const r = game.summary();
+  track('share', { method: 'x', content_type: 'result' });
   const lines = [
     `!!!!!!! なぞってぽっぷで ポップなお祭り度 ${r.festival.percent}%（${r.festival.rank}）！`,
     `スコア ${r.score.toLocaleString('ja-JP')}${r.favorite === null ? '' : `・今日の推し色は${COLORS[r.favorite].name}`}`,
@@ -555,6 +559,7 @@ $('btn-share').addEventListener('click', shareResult);
 $('btn-again').addEventListener('click', () => {
   newMatch();
   setScreen('play');
+  track('game_start', { mode });
 });
 $('rescue').addEventListener('click', () => {
   if (!game || app.dataset.screen !== 'play') return;
