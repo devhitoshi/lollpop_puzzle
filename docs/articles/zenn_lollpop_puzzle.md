@@ -12,7 +12,7 @@ published: false
 docs/handoff.md、claude-work/20260914_落ちものパズル制作/作業記録.md（第 11〜14 弾）、~/.claude/skills/agy-ask/SKILL.md
 -->
 
-アイドルグループ「ろりぽっぷ!!!!!!!」の非公式ファンゲームとして、ツムツム風の「なぞって消す」落ちものパズルを作り、ロリポップ！デプロイナウで公開しました。
+アイドルグループ「ろりぽっぷ!!!!!!!」の非公式ファンゲームとして、ツムツム風のなぞり消しパズル「!!!!!!! なぞってぽっぷ」を作り、ロリポップ！デプロイナウで公開しました。
 
 - 遊べる URL：https://lollpop-puzzle.lolipop-now.app/
 - リポジトリ：https://github.com/devhitoshi/lollpop_puzzle
