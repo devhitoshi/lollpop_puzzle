@@ -128,6 +128,7 @@ export const CONFIG = {
     maxDpr: 2,
     candyRadius: 0.42, // drawn candy size relative to one cell / body diameter
     artRadius: 0.49, // piece art (skins with images) fills more of the cell than a candy
+    artRim: 0.09, // member-color rim around piece art, relative to the piece radius (0 = no rim)
     starRadius: 0.44, // star candy (CONFIG.special)
     stickLength: 0.66,
     selectedScale: 1.1,

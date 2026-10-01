@@ -416,7 +416,7 @@
     ['M18', 'FEVER の文字・コンボの弾み', '大きく出て縮む（1.3 秒）／数字が 1.5 倍から戻る', 'css/base.css'],
     ['M19', '救済「ぽっぷボム」（爆発して混ぜ直す）', '1 試合 3 回。下を消して補充し、全体の色を混ぜ直す。得点・「!」なし、コンボは維持して猶予を数え直す。爆発の光と粒・揺れ・「ドン」と振動', ['rescue.count', 'rescue.physicsDepth', 'rescue.shake', 'render.boomDuration']],
     ['M20', 'フィーバーの残り時間', 'バーが縮み、秒数を表示。残り秒数以下で点滅と 1 秒ごとの音。終わると「FEVER おわり」', ['fever.duration', 'fever.warnAt']],
-    ['M22', '駒の見た目（スキン）と表情', '?skin=candy|members|sample。絵のあるスキンは 5 種類の絵を場面で差し替える：通常／なぞり中は笑顔（happy）／消えた瞬間ははじけ顔（pop）／フィーバー中はフィーバー顔（fever）／結果画面はポーズ（pose）。無い絵は代わりを使う（assets/skins/README.md）', ['skin.default', 'render.artRadius', 'render.candyRadius']],
+    ['M22', '駒の見た目（スキン）と表情', '?skin=candy|members|sample。絵のあるスキンは 5 種類の絵を場面で差し替える：通常／なぞり中は笑顔（happy）／消えた瞬間ははじけ顔（pop）／フィーバー中はフィーバー顔（fever）／結果画面はポーズ（pose）。無い絵は代わりを使う（assets/skins/README.md）。絵の駒は髪が本人の髪色なので、外周にメンバーカラーの縁を描く（artRim）', ['skin.default', 'render.artRadius', 'render.artRim', 'render.candyRadius']],
     ['M33', 'はじけの残像', '消えた駒をこの秒数だけはじけ顔で残し、この倍率まで膨らませてから紙吹雪にする', ['render.popGhost', 'render.popGhostScale']],
     ['M21', 'なぞり線（アウトライン）', '白い縁の太さ・内側の帯の太さ・脈打つ幅。淡い地のテーマでは白い縁の外に細い濃い線（--trace-edge）', ['render.traceOutline', 'render.traceInset', 'render.traceEdge', 'render.traceOutlinePulse', 'render.selectedScale']],
     ['M26', 'ラストスパートとボーナスタイム', '1 分モードの残り at 秒から、「!」1 個に要る個数が piecesPerBang になる（溜まった分は「進み」で持つので、切り替わった瞬間に増えない）。時間が 0 のときにフィーバー中なら、フィーバーが終わるまで試合が続く', ['lastSpurt.at', 'lastSpurt.piecesPerBang', 'fever.duration']],

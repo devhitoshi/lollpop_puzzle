@@ -31,7 +31,7 @@
   .lead b { color: var(--accent); }
   .note { position: absolute; left: 64px; bottom: 22px; font-weight: 800; font-size: 17px; color: #8d5a78; padding: 4px 10px; background: rgba(255,243,248,.92); }
   .faces { position: absolute; right: 40px; top: 90px; width: 500px; height: 470px; }
-  .faces img { position: absolute; width: var(--s); filter: drop-shadow(0 8px 0 rgba(59,31,53,.18)); }
+  .faces img { position: absolute; width: var(--s); filter: drop-shadow(5px 0 0 var(--rim)) drop-shadow(-5px 0 0 var(--rim)) drop-shadow(0 5px 0 var(--rim)) drop-shadow(0 -5px 0 var(--rim)) drop-shadow(0 8px 0 rgba(59,31,53,.18)); } /* --rim: member color, as in js/render.js drawArt */
 </style>
 </head>
 <body>
@@ -44,11 +44,11 @@
   </div>
   <p class="note">非公式のファン制作です。運営・GMOペパボとは関係ありません。</p>
   <div class="faces">
-    <img src="../assets/skins/members/kurumi_happy.png" style="--s:210px; left:150px; top:0" alt="">
-    <img src="../assets/skins/members/mayu_happy.png" style="--s:185px; left:0; top:110px" alt="">
-    <img src="../assets/skins/members/mau_happy.png" style="--s:185px; left:310px; top:120px" alt="">
-    <img src="../assets/skins/members/ami_happy.png" style="--s:185px; left:60px; top:280px" alt="">
-    <img src="../assets/skins/members/mana_fever.png" style="--s:185px; left:250px; top:285px" alt="">
+    <img src="../assets/skins/members/kurumi_happy.png" style="--rim:#cc0000; --s:210px; left:150px; top:0" alt="">
+    <img src="../assets/skins/members/mayu_happy.png" style="--rim:#f5c400; --s:185px; left:0; top:110px" alt="">
+    <img src="../assets/skins/members/mau_happy.png" style="--rim:#7fd4e8; --s:185px; left:310px; top:120px" alt="">
+    <img src="../assets/skins/members/ami_happy.png" style="--rim:#2e9e5b; --s:185px; left:60px; top:280px" alt="">
+    <img src="../assets/skins/members/mana_fever.png" style="--rim:#ff7fbf; --s:185px; left:250px; top:285px" alt="">
   </div>
 </body>
 </html>

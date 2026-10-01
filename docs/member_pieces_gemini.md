@@ -23,8 +23,11 @@
 
 オーナーの判断：体があると跳ねたときに可愛くないので、**盤面の駒は顔だけ**にする。質感はくるみ 1 人で 6 案（ぷっくり 3D／ぬいぐるみ／缶バッジ／飴玉／マシュマロ大福／粘土）を試作して比べ、**A ぷっくり 3D** に決めた（盤面の実寸で顔と色が一番読める、つぶれても可愛い）。**結果画面のポーズ（`*_pose.png`）は全身のまま**。
 
+- **髪は公式アー写の髪色にする**（2026-10-01〜）。はじめは髪をメンバーカラーで塗っていたが、本人に似ていなかった。メンバーカラーは髪飾りの色と、ゲームがコードで描く駒の縁（`js/render.js` の `drawArt`、太さは `CONFIG.render.artRim`）で出す
+- 髪の特徴はプロンプトに言葉で書かず、写真（`raw/ref/members/<key>.jpg`）を添付して Gemini に取らせる。構図と表情の見本は前の版の 2×2（`raw/layout_<key>.png`）
+- ポーズも同じ考えで、前の絵（`raw/poseref_<key>.png`）と写真を添付して髪だけ直す：`python scripts/gen_member_face.py kurumi --pose` → `python scripts/prepare_piece.py raw/pose_kurumi.png --grid 1x1 --members kurumi --rows pose --out assets/skins/members`
 - 質感の見本：`raw/style_A_ref.png`（試作のくるみ。git の対象外）
-- 1 人 1 回、2×2（左上 通常・右上 笑顔・左下 はじけ・右下 フィーバー）、1:1、マゼンタ背景で Antigravity（`agy -p`）に生成させる。プロンプトの本文は `scripts/gen_member_face.py` の `PROMPT`、メンバーごとの違い（列番号・髪の説明・まなの輪郭の指定）は `MEMBERS`
+- 1 人 1 回、2×2（左上 通常・右上 笑顔・左下 はじけ・右下 フィーバー）、1:1、マゼンタ背景で Antigravity（`agy -p`）に生成させる。プロンプトの本文は `scripts/gen_member_face.py` の `PROMPT`、メンバーごとの違い（髪飾りの色・まなの輪郭の指定）は `MEMBERS`
 - 一括（20 体を 1 枚）にしないのは、体つきの版で細部が崩れ、まなだけ作り直しになったため
 
 ```powershell

@@ -63,8 +63,9 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
       const art = skin?.pieces[i];
       if (art?.image) {
         const px = R.artRadius * scale * dpr;
-        const face = (img) => (img ? drawArt(img, px) : null);
-        const normal = drawArt(art.image, px);
+        const rim = effectColor(c);
+        const face = (img) => (img ? drawArt(img, px, rim) : null);
+        const normal = drawArt(art.image, px, rim);
         const happy = face(art.happy);
         // Missing faces fall back so every piece always has something to show
         return { normal, happy, pop: face(art.pop) ?? happy ?? normal, fever: face(art.fever) ?? normal, radius: R.artRadius, stick: skin.stick };
@@ -123,13 +124,36 @@ export function createRenderer(canvas, { config, colors, reducedMotion = false }
 
   // Piece art is 512 × 512 with the character in a centered 460 box (assets/skins/README.md),
   // so the 460 box maps to the piece diameter.
-  function drawArt(img, radius) {
+  // The hair is the member's real hair color, so the member color is a rim around the silhouette:
+  // the art tinted to one flat color, stamped around a circle, with the art on top.
+  function drawArt(img, radius, rimColor) {
     const size = Math.ceil((radius * 2 * 512) / 460);
     const off = document.createElement('canvas');
     off.width = size;
     off.height = size;
     const g = off.getContext('2d');
     g.imageSmoothingQuality = 'high';
+    const rim = radius * R.artRim;
+    if (rimColor && rim > 0) {
+      // Shrink the art by the rim width so the rim stays inside the 460 box (the piece size is unchanged)
+      const k = 1 - R.artRim;
+      const pad = (size * (1 - k)) / 2;
+      const tint = document.createElement('canvas');
+      tint.width = size;
+      tint.height = size;
+      const t = tint.getContext('2d');
+      t.imageSmoothingQuality = 'high';
+      t.drawImage(img, pad, pad, size * k, size * k);
+      t.globalCompositeOperation = 'source-in';
+      t.fillStyle = rimColor;
+      t.fillRect(0, 0, size, size);
+      for (let i = 0; i < 16; i++) {
+        const a = (i * Math.PI) / 8;
+        g.drawImage(tint, Math.cos(a) * rim, Math.sin(a) * rim);
+      }
+      g.drawImage(img, pad, pad, size * k, size * k);
+      return off;
+    }
     g.drawImage(img, 0, 0, size, size);
     return off;
   }
